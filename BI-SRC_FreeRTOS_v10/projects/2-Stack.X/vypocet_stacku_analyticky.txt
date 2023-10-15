@@ -1,0 +1,43 @@
+Values in Bytes
+//-----TASK_1-----------
+
+task__arg_vptr, 2
+task_ret_addr, 2
+
+srand_ret_addr, 2
+srand_rezie, 4
+
+prvFoo/prvBar_ret_addr, 2
+
+prvFoo
+{
+arg_long, 4
+short_sI, 2
+array, 20
+ret_val, 2
+} sum=28
+
+prvBar
+{
+arg_short, 2
+ptr_short, 2
+short_sA, 2
+ret_val, 1
+} sum=7
+
+estimated <=40 Bytes
+//-----TASK_2-----------
+
+task__arg_vptr, 2
+task_ret_addr, 2
+
+// max_hlbka_zanorenia=9
+jedno_zanorenie
+{
+ret_val, 2
+ret_addr, 2
+arg_1, 2
+arg_2, 2
+} max_alokacia=9*8=72B
+
+estimated <=76 Bytes
