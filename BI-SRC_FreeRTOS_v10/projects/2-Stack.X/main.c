@@ -29,8 +29,8 @@ int main( void )
     prvSetupHardware();
     
     /* Create the task. */
-    xTaskCreate( vStackTask1, ( const char * ) "ST 1", 100, NULL, tskIDLE_PRIORITY + 1, NULL );
-    xTaskCreate( vStackTask2, ( const char * ) "ST 2", 100, NULL, tskIDLE_PRIORITY + 1, NULL );
+    xTaskCreate( vStackTask1, ( const char * ) "ST 1", 57, NULL, tskIDLE_PRIORITY + 1, NULL ); // analyticky <=40B
+    xTaskCreate( vStackTask2, ( const char * ) "ST 2", 76, NULL, tskIDLE_PRIORITY + 1, NULL ); // analyticky <=76B
 //    xTaskCreate( vDisplayGatekeeperTask, ( const char * ) "DGKT", 1000, NULL, tskIDLE_PRIORITY + 2, NULL );
     
     /* Start the scheduler. */
