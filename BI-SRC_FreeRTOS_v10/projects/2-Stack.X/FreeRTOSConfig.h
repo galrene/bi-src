@@ -53,6 +53,8 @@
 #define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			1
 #define configIDLE_SHOULD_YIELD			1
+#define configSUPPORT_STATIC_ALLOCATION 1
+#define configCHECK_FOR_STACK_OVERFLOW 1
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
 
@@ -66,6 +68,5 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 #define configKERNEL_INTERRUPT_PRIORITY	0x01
 
-#define configCHECK_FOR_STACK_OVERFLOW 1
 
 #endif /* FREERTOS_CONFIG_H */
