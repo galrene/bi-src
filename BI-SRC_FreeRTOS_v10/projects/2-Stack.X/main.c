@@ -25,11 +25,16 @@ void vApplicationStackOverflowHook( TaskHandle_t xTask,
 /*-----------------------------------------------------------*/
 /**
  * Task1
- *  analyticky <=40B; nahodily pristup 57B
+ *  analyticky <=40B; nahodily pristup 57 words
  * Task2
- *  analyticky 76B, nahodily pristup 76B
+ *  analyticky 76B, nahodily pristup 76 words
  * 
- * Tasky staticky
+ * experimentalny pristup vypisoval pre oboje 76
+ * 
+ * BONUS:
+ * Nahodily pristup rovnake vysledky
+ * experimentalny vypisuje zvlastne hodnoty, ktore sa menia podal toho
+ * aku velkost nastavim + blika vypis?
  */
 
 
