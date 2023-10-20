@@ -30,7 +30,9 @@ int main( void )
     /* Create the task. */
     xTaskCreate( vDisplayPrintTask, ( const char * ) "Print A", configMINIMAL_STACK_SIZE, (void *) 'A', tskIDLE_PRIORITY + 1, NULL );
     xTaskCreate( vDisplayPrintTask, ( const char * ) "Print B", configMINIMAL_STACK_SIZE, (void *) 'B', tskIDLE_PRIORITY + 1, NULL );
-
+    
+    xTaskCreate( vDisplayGatekeeperTask, ( const char * ) "Manage Q", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, NULL );
+    
     /* Start the scheduler. */
     vTaskStartScheduler();
 
@@ -43,7 +45,7 @@ int main( void )
 /* Hardware configuration function definition. */
 static void prvSetupHardware ( void )
 {
-    vOLEDInit();
+    vDisplayInit();
 }
 
 /*-----------------------------------------------------------*/
