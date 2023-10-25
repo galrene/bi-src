@@ -13,6 +13,7 @@
       <itemPath>FreeRTOSConfig.h</itemPath>
       <itemPath>oled.h</itemPath>
       <itemPath>display.h</itemPath>
+      <itemPath>led.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -32,6 +33,7 @@
       <itemPath>main.c</itemPath>
       <itemPath>oled.c</itemPath>
       <itemPath>display.c</itemPath>
+      <itemPath>led.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

@@ -5,13 +5,14 @@
 #include "display.h"
 
 #include <stdio.h>
+#include "led.h"
 
 #define    FCY    16000000UL
 #include <libpic30.h>
 
 xQueueHandle xDisplayQueue;
-#define Q_ITEM_SIZE 10
-#define Q_MAX_ITEMS 4
+#define Q_MAX_ITEMS 10
+#define Q_ITEM_SIZE 2
 
 /**
  * vDisplayInit inicializuje OLED displej
@@ -43,10 +44,11 @@ void vDisplayGatekeeperTask ( void * pvParameters )
 {
     while ( 1 ) {
         char buffer[Q_ITEM_SIZE];
-        xQueueReceive ( xDisplayQueue,
-                        (void *) buffer,
-                        portMAX_DELAY );
-        vOLEDPutString ( buffer );
+        BaseType_t qRet = xQueueReceive ( xDisplayQueue,
+                                          (void *) buffer,
+                                          portMAX_DELAY );
+        if ( qRet == pdPASS )
+            vOLEDPutString ( buffer );
     }
 }
 /**
