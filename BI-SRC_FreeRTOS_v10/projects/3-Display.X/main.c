@@ -61,7 +61,6 @@ int main( void )
 static void prvSetupHardware ( void )
 {
     vDisplayInit();
-//    vInitLED();
 }
 
 /*-----------------------------------------------------------*/

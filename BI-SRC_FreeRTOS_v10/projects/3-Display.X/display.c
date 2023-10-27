@@ -11,7 +11,7 @@
 #include <libpic30.h>
 
 xQueueHandle xDisplayQueue;
-#define Q_MAX_ITEMS 10
+#define Q_MAX_ITEMS 5
 #define Q_ITEM_SIZE 2
 
 /**
@@ -45,9 +45,9 @@ void vDisplayGatekeeperTask ( void * pvParameters )
     while ( 1 ) {
         char buffer[Q_ITEM_SIZE];
         BaseType_t qRet = xQueueReceive ( xDisplayQueue,
-                                          (void *) buffer,
+                                          (void * )buffer,
                                           portMAX_DELAY );
-        if ( qRet == pdPASS )
+        if ( qRet == pdPASS ) // nenastane s portMAX_DELAY
             vOLEDPutString ( buffer );
     }
 }
@@ -56,9 +56,9 @@ void vDisplayGatekeeperTask ( void * pvParameters )
  * a vkládá jej do fronty pro výpis
  */
 void vDisplayPutString ( const char * pcString )
-{   
+{
     char buffer[Q_ITEM_SIZE];
-    snprintf ( buffer, Q_ITEM_SIZE - 1, "%s", pcString );
+    snprintf ( buffer, Q_ITEM_SIZE, "%c", pcString );
     xQueueSendToBack ( xDisplayQueue,
-                       buffer, portMAX_DELAY );
+                       (void *) buffer, portMAX_DELAY );
 }
