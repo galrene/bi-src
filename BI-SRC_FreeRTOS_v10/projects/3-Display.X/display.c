@@ -36,6 +36,13 @@ void vDisplayPrintTask ( void * pvParameters )
         __delay_ms ( 500 );
     }
 }
+void vDisplayPrintTask2 ( void * pvParameters )
+{
+    while ( 1 ) {
+        vDisplayPutString ( pvParameters );
+        vTaskDelay ( 500 );
+    }
+}
 /**
  * vDisplayGatekeeperTask je proces čekající na frontě pro výpis na displej
  * a obstarává samotný výpis pomocí funkce vOLEDPutString

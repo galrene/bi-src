@@ -5,6 +5,7 @@
 
 void vDisplayInit ( void );
 void vDisplayPrintTask ( void * );
+void vDisplayPrintTask2 ( void * );
 void vDisplayGatekeeperTask ( void * );
 void vDisplayPutString ( const char * );
 

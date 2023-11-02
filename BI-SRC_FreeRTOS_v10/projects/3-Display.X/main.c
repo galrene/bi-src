@@ -28,24 +28,24 @@ int main( void )
     prvSetupHardware();
     
     /* Create the task. */
-    xTaskCreate( vDisplayPrintTask,
+    xTaskCreate( vDisplayPrintTask2,
                  ( const char * ) "Greet 1",
                  2*configMINIMAL_STACK_SIZE,
-                 (void *) "AHOJ\n",
-                 tskIDLE_PRIORITY + 1,
+                 (void *) "A",
+                 tskIDLE_PRIORITY + 2,
                  NULL );
-    xTaskCreate( vDisplayPrintTask,
+    xTaskCreate( vDisplayPrintTask2,
                  ( const char * ) "Greet 2",
                  2*configMINIMAL_STACK_SIZE,
-                 (void *) "CAUU\n",
-                 tskIDLE_PRIORITY + 1,
+                 (void *) "B",
+                 tskIDLE_PRIORITY + 2,
                  NULL );
     
     xTaskCreate( vDisplayGatekeeperTask,
                  ( const char * ) "Manage Q",
                  configMINIMAL_STACK_SIZE,
                  NULL,
-                 tskIDLE_PRIORITY + 2,
+                 tskIDLE_PRIORITY + 3,
                  NULL );
     
     /* Start the scheduler. */
