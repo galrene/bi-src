@@ -29,15 +29,15 @@ int main( void )
     
     /* Create the task. */
     xTaskCreate( vDisplayPrintTask,
-                 ( const char * ) "Print A",
-                 configMINIMAL_STACK_SIZE,
-                 (void *) 'A',
+                 ( const char * ) "Greet 1",
+                 2*configMINIMAL_STACK_SIZE,
+                 (void *) "AHOJ\n",
                  tskIDLE_PRIORITY + 1,
                  NULL );
     xTaskCreate( vDisplayPrintTask,
-                 ( const char * ) "Print B",
-                 configMINIMAL_STACK_SIZE,
-                 (void *) 'B',
+                 ( const char * ) "Greet 2",
+                 2*configMINIMAL_STACK_SIZE,
+                 (void *) "CAUU\n",
                  tskIDLE_PRIORITY + 1,
                  NULL );
     

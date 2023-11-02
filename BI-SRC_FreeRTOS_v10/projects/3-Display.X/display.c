@@ -1,4 +1,4 @@
-#include "FreeRTOS.h"
+#include "../Source/include/FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
 #include "oled.h"
@@ -11,8 +11,8 @@
 #include <libpic30.h>
 
 xQueueHandle xDisplayQueue;
-#define Q_MAX_ITEMS 5
-#define Q_ITEM_SIZE 2
+#define Q_MAX_ITEMS 6
+#define Q_ITEM_SIZE 6
 
 /**
  * vDisplayInit inicializuje OLED displej
@@ -32,8 +32,8 @@ void vDisplayInit ( void )
 void vDisplayPrintTask ( void * pvParameters )
 {
     while ( 1 ) {
-        vDisplayPutString ( ( const char * ) pvParameters );
-        __delay_ms ( 100 );
+        vDisplayPutString ( pvParameters );
+        __delay_ms ( 500 );
     }
 }
 /**
@@ -47,7 +47,7 @@ void vDisplayGatekeeperTask ( void * pvParameters )
         BaseType_t qRet = xQueueReceive ( xDisplayQueue,
                                           (void * )buffer,
                                           portMAX_DELAY );
-        if ( qRet == pdPASS ) // nenastane s portMAX_DELAY
+        if ( qRet == pdPASS )
             vOLEDPutString ( buffer );
     }
 }
@@ -58,7 +58,7 @@ void vDisplayGatekeeperTask ( void * pvParameters )
 void vDisplayPutString ( const char * pcString )
 {
     char buffer[Q_ITEM_SIZE];
-    snprintf ( buffer, Q_ITEM_SIZE, "%c", pcString );
+    snprintf ( buffer, Q_ITEM_SIZE, "%s", pcString );
     xQueueSendToBack ( xDisplayQueue,
                        (void *) buffer, portMAX_DELAY );
 }
