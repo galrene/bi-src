@@ -3,10 +3,12 @@
 #include "task.h"
 #include "queue.h"
 
-/* Application includes. */
-#include "display.h"
-#include "keypad.h"
+/* libves includes. */
 #include "led.h"
+
+/* Application includes. */
+#include "keypad.h"
+#include "displej.h"
 #include "assignment.h"
 
 /*-----------------------------------------------------------*/
@@ -30,6 +32,8 @@ int main( void )
     prvSetupHardware();
     
     /* Create the task. */
+    xTaskCreate( vDisplayGatekeeperTask, ( const char * ) "Disp", configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES-1), NULL );
+    xTaskCreate( vKeypadMonitorTask,     ( const char * ) "Keys", configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES-1), NULL );
     
     /* Start the scheduler. */
     vTaskStartScheduler();
@@ -43,7 +47,10 @@ int main( void )
 /* Hardware configuration function definition. */
 static void prvSetupHardware ( void )
 {
-    
+    vDisplayInit();
+    vKeypadInit();
+    led_init();
+    led_all_off();
 }
 
 /*-----------------------------------------------------------*/
