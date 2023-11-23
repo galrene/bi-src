@@ -22,6 +22,8 @@ static void prvSetupHardware ( void );
 void vApplicationStackOverflowHook( TaskHandle_t xTask,
                                     char *pcTaskName );
 
+void vWaterMarkTask ( TaskHandle_t task1Handle, TaskHandle_t task2Handle );
+
 /*-----------------------------------------------------------*/
 /**
  * Task1
@@ -73,13 +75,14 @@ int main ( void ) {
             &xTaskBuffer2 );
 
     xTaskCreate ( vDisplayGatekeeperTask, ( const char * ) "DGKT", 1000, NULL, tskIDLE_PRIORITY + 2, NULL );
- 
-    UBaseType_t wm1 = uxTaskGetStackHighWaterMark ( task1Handle );
-    UBaseType_t wm2 = uxTaskGetStackHighWaterMark ( task2Handle );
     
-    char buffer [16];
-    size_t strLen = snprintf ( buffer, sizeof(buffer), "T1:%d T2:%d", wm1, wm2 );
-    vDisplayPutString ( buffer, strLen );
+    xTaskCreate( vWaterMarkTask,
+                ( const char * ) "DEBUG",
+                2*configMINIMAL_STACK_SIZE,
+                (void *) ( task1Handle, task2Handle ),
+                tskIDLE_PRIORITY + 2,
+                NULL );
+
     /* Start the scheduler. */
     vTaskStartScheduler();
     /* Will only reach here if there is insufficient heap available to start
@@ -129,6 +132,18 @@ void vApplicationStackOverflowHook ( TaskHandle_t xTask,
 static void prvSetupHardware ( void ) {
     vInitLED ();
     vDisplayInit();
+}
+
+void vWaterMarkTask ( TaskHandle_t task1Handle, TaskHandle_t task2Handle ) {
+    while ( 1 ) {
+        UBaseType_t waterMark1 = uxTaskGetStackHighWaterMark ( task1Handle );
+        UBaseType_t waterMark2 = uxTaskGetStackHighWaterMark ( task2Handle );
+        
+        char buffer [16];
+        size_t strLen = snprintf ( buffer, sizeof(buffer), "T1:%d T2:%d", waterMark1, waterMark2 );
+        vDisplayPutString ( buffer, strLen );
+        vTaskDelay ( pdMS_TO_TICKS ( 1000 ) );
+    }
 }
 
 /*-----------------------------------------------------------*/
