@@ -31,9 +31,34 @@ int main( void )
     /* Configure hardware. */
     prvSetupHardware();
     
+    UBaseType_t incPriority = configMAX_PRIORITIES - 1;
+    UBaseType_t sievePriority     = configMAX_PRIORITIES - 1;
+
     /* Create the task. */
-    xTaskCreate( vDisplayGatekeeperTask, ( const char * ) "Disp", configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES-1), NULL );
-    xTaskCreate( vKeypadMonitorTask,     ( const char * ) "Keys", configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES-1), NULL );
+    xTaskCreate( vDisplayGatekeeperTask,
+                 ( const char * ) "Disp",
+                 configMINIMAL_STACK_SIZE,
+                 NULL,
+                 (configMAX_PRIORITIES-1),
+                 NULL );
+    xTaskCreate( vKeypadMonitorTask,
+                 ( const char * ) "Keys",
+                 configMINIMAL_STACK_SIZE,
+                 NULL,
+                 (configMAX_PRIORITIES-1),
+                 NULL );
+    xTaskCreate( vIncrement,     
+                 ( const char * ) "++", 
+                 configMINIMAL_STACK_SIZE, 
+                 (void *) incPriority,
+                 incPriority,
+                 NULL );
+    xTaskCreate( vSieveOfEratosthenes,     
+                 ( const char * ) "Erat", 
+                 configMINIMAL_STACK_SIZE, 
+                 (void *) sievePriority,
+                 sievePriority,
+                 NULL );
     
     /* Start the scheduler. */
     vTaskStartScheduler();
@@ -54,3 +79,18 @@ static void prvSetupHardware ( void )
 }
 
 /*-----------------------------------------------------------*/
+
+/**
+ * @brief Zadanie: Zaleziac na stlacenom tlacitku vyvolaj udalost
+ * ktora zavola task, ktory zmeni prioritu inemu
+ * tasku.
+ * 
+ * 1.) taskNotifyGive - nic moc
+ * 2.) xTaskNotify - dovoluje poslat hodnotu
+ *     - xTaskNotifyTake na prijmanie
+ */
+/**
+ * Uloha s vytvaranim a zabijanim tasku nebude fungovat, kvoli heap_1
+ * https://www.freertos.org/a00111.html
+ * treba inu haldu.
+*/

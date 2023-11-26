@@ -48,6 +48,12 @@ void vKeypadMonitorTask ( void * pvParameters )
         if( key > 0 && key < 6 ){
             str[0] = '0' + key;
             vDisplayPutString( str, 1 );
+            if ( key == 1 || key == 3 )
+                xTaskNotify ( xUDTaskHandle, key, eSetValueWithOverwrite );
+            else if ( key == 2 || key == 4 )
+                xTaskNotify ( xLRTaskHandle, key, eSetValueWithOverwrite );
+            else if ( key == 5 )
+                xTaskNotify ( xMTaskHandle, key, eSetValueWithOverwrite );
         }
         
         vTaskDelay( 100 / portTICK_PERIOD_MS );
