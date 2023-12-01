@@ -23,22 +23,13 @@
  * jednou za vteřinu ji inkrementuje a vypíše její hodnotu na displej.
  * Použijte busy waiting.
  */
-void vIncrement ( UBaseType_t *puxPriority ) {
+void vIncrement ( void ) {
     BaseType_t bUsefulVariable = 0;
     while ( 1 ) {
         char buffer[3];
-        snprintf ( buffer, sizeof(buffer), "%d", bUsefulVariable );
+        snprintf ( buffer, sizeof(buffer), "%d", bUsefulVariable++ );
         vDisplayPutString ( buffer, sizeof(buffer) );
-        
-        bUsefulVariable++;
         __delay_ms(1000);
-        
-        BaseType_t receivedValue = 0;
-        xTaskNotifyWait( 0, 0, &receivedValue, portMAX_DELAY ); // delay?
-        if ( receivedValue == 1 )
-            (*puxPriority)++;
-        else if ( receivedValue == 3 )
-            (*puxPriority)--;
     }
     
 }
@@ -77,19 +68,12 @@ int iFindLargestPrime() {
 
 
 /* Find largest prime under 1000 */
-void vTaskFindPrime( UBaseType_t *puxPriority ) {
+void vTaskFindPrime( void ) {
     while ( 1 ) {
         char buffer[5];
         int prime = iFindLargestPrime();
         snprintf ( buffer, sizeof(buffer), "%d", prime );
         vDisplayPutString ( buffer, sizeof(buffer) );
         vTaskDelay( 1000 / portTICK_PERIOD_MS );
-
-        BaseType_t receivedValue = 0;
-        xTaskNotifyWait( 0, 0, &receivedValue, portMAX_DELAY ); // delay?
-        if ( receivedValue == 2 )
-            (*puxPriority)++;
-        else if ( receivedValue == 4 )
-            (*puxPriority)--;
     }
 }

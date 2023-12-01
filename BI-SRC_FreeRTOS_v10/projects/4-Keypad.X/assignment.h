@@ -3,10 +3,10 @@
 
 #include <stdbool.h>
 
-void vIncrement ( UBaseType_t *puxPriority);
+void vIncrement ( void );
 void vSieveOfEratosthenes ( bool isPrime[], int limit);
 int iFindLargestPrime ( void );
-void vTaskFindPrime ( UBaseType_t *puxPriority );
+void vTaskFindPrime ( void );
 
 
 #endif	/* ASSINGMENT_H */

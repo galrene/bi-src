@@ -24,6 +24,11 @@ static void prvSetupHardware ( void );
 
 /*-----------------------------------------------------------*/
 
+typedef struct {
+    TaskHandle_t xIncrementTaskHandle;
+    TaskHandle_t xSieveTaskHandle;
+} TTaskHandles_t;
+
 
 /* Create the tasks and start the scheduler. */
 int main( void )
@@ -31,8 +36,10 @@ int main( void )
     /* Configure hardware. */
     prvSetupHardware();
     
-    UBaseType_t incPriority = configMAX_PRIORITIES - 1;
-    UBaseType_t sievePriority     = configMAX_PRIORITIES - 1;
+    TTaskHandles_t xTaskHandles = { .xIncrementTaskHandle = NULL,
+                                    .xSieveTaskHandle     = NULL };
+
+    TaskHandle_t changePriorTaskHandle;
 
     /* Create the task. */
     xTaskCreate( vDisplayGatekeeperTask,
@@ -41,25 +48,31 @@ int main( void )
                  NULL,
                  (configMAX_PRIORITIES-1),
                  NULL );
-    xTaskCreate( vKeypadMonitorTask,
-                 ( const char * ) "Keys",
-                 configMINIMAL_STACK_SIZE,
-                 NULL,
-                 (configMAX_PRIORITIES-1),
-                 NULL );
     xTaskCreate( vIncrement,     
                  ( const char * ) "++", 
                  configMINIMAL_STACK_SIZE, 
-                 (void *) incPriority,
-                 incPriority,
-                 NULL );
+                 NULL,
+                 (configMAX_PRIORITIES-2),
+                 (TaskHandle_t * ) &xTaskHandles.xIncrementTaskHandle );
     xTaskCreate( vSieveOfEratosthenes,     
                  ( const char * ) "Erat", 
                  configMINIMAL_STACK_SIZE, 
-                 (void *) sievePriority,
-                 sievePriority,
+                 NULL,
+                 (configMAX_PRIORITIES-2),
+                 (TaskHandle_t * ) &xTaskHandles.xSieveTaskHandle );
+    // send task handles as parameters to keypad monitor task
+    xTaskCreate( vChangePriorityTask,     
+                 ( const char * ) "Prior", 
+                 configMINIMAL_STACK_SIZE, 
+                 (void *) &xTaskHandles,
+                 (configMAX_PRIORITIES-1),
+                 &changePriorTaskHandle );
+    xTaskCreate( vKeypadMonitorTask,     
+                 ( const char * ) "Keypad", 
+                 configMINIMAL_STACK_SIZE, 
+                 (void *) &changePriorTaskHandle,
+                 (configMAX_PRIORITIES-1),
                  NULL );
-    
     /* Start the scheduler. */
     vTaskStartScheduler();
 
