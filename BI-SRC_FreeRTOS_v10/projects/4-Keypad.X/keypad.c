@@ -23,22 +23,22 @@ typedef struct {
 
 #define TASK_PRIORITY_CEILING (configMAX_PRIORITIES-3)
 
+TaskHandle_t xUDTaskHandle;
+TaskHandle_t xLRTaskHandle;
+TaskHandle_t xMTaskHandle;
+
 void vKeypadInit ( void )
 {
     touchpad_init();
 }
 
-void vKeypadCalibration ( void * pvParameters )
-{
-    
-}
 /**
  * @brief "Sieve" task priority
  */
 void vChangeLRTaskPriority ( void * pvParameters )
 {
-    UBaseType_t key = 0;
-    TaskHandle_t sieveTaskHandle = *(( TaskHandle_t * ) pvParameters);
+    uint32_t key = 0;
+    TaskHandle_t sieveTaskHandle = xTaskGetHandle( "Erat" );;
     char str[2];
     str[1] = '\0';
 
@@ -73,15 +73,16 @@ void vChangeLRTaskPriority ( void * pvParameters )
  */
 void vChangeUDTaskPriority ( void * pvParameters )
 {
-    UBaseType_t key = 0;
-    TaskHandle_t incTaskHandle = *((TaskHandle_t *) pvParameters);
+    uint32_t key = 0;
+    TaskHandle_t incTaskHandle = xTaskGetHandle( "++" );
     char str[2];
     str[1] = '\0';
 
     while( 1 )
     {
+        vDisplayPutString( "UDWAITING", 9 );
         xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        vDisplayPutString( "Alive", 5 );
+        vDisplayPutString( "UDALIVE", 7 );
         UBaseType_t priority = uxTaskPriorityGet( incTaskHandle );;
         switch (key)
         {
@@ -127,15 +128,22 @@ void vLEDBlinkTask ( void )
  **/
 void vKeypadMonitorTask ( void * pvParameters )
 {
-    BaseType_t key;
+    uint32_t key;
     char str[2];
     
     str[1] = '\0';
     // TTaskHandles_t * taskHandles = ( TTaskHandles_t * ) pvParameters;
     // TaskHandle_t incrementTaskControl = taskHandles->xIncrementTaskHandle;
     // TaskHandle_t sieveTaskControl = taskHandles->xSieveTaskHandle;
-    TaskHandle_t incrementTaskControl = *((TaskHandle_t*)pvParameters);
-    TaskHandle_t sieveTaskControl = NULL;
+ 
+    // TaskHandle_t incrementTaskControl = xTaskGetHandle( "++C" );
+    TaskHandle_t incrementTaskControl = xUDTaskHandle;
+    TaskHandle_t sieveTaskControl = xTaskGetHandle( "EraC" );
+    if ( sieveTaskControl == NULL)
+        vDisplayPutString( "NULL_sieve", 11 );
+    if ( incrementTaskControl == NULL)
+        vDisplayPutString( "NULL_increment", 9 );
+    
     while( 1 )
     {
         key  = get_touchpad_key();
@@ -143,12 +151,14 @@ void vKeypadMonitorTask ( void * pvParameters )
             str[0] = '0' + key;
             vDisplayPutString( "K:", 2 );
             vDisplayPutString( str, 1 );
-            if ( key == KEY_UP || key == KEY_DOWN )
+            if ( key == KEY_UP || key == KEY_DOWN ) {
+                vDisplayPutString( "NotifyingUD", 11 );
                 xTaskNotify ( incrementTaskControl, key, eSetValueWithOverwrite );
+            }
             else if ( key == KEY_LEFT || key == KEY_RIGHT )
                 xTaskNotify ( sieveTaskControl, key, eSetValueWithOverwrite );
             else if ( key == KEY_CENTER )
-                xTaskCreate( vLEDBlinkTask,     
+                xTaskCreate( ( TaskFunction_t ) vLEDBlinkTask,     
                              ( const char * ) "LED", 
                              configMINIMAL_STACK_SIZE, 
                              NULL,
