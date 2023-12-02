@@ -3,15 +3,16 @@
 #include "queue.h"
 #include "led.h"
 #include "display.h"
+#include "displej.h"
 #include "keypad.h"
 #include "assignment.h"
 
 #include "stdio.h"
-#include <stdbool.h>
 
 #define    FCY    16000000UL
 #include <libpic30.h>
 
+#define PRIME_LIMIT 1000
 
 /**
  * Veškeré tasky jakožto i pomocné funkce si deklarujte v assignment.h a 
@@ -26,12 +27,10 @@ void vIncrement ( void ) {
     BaseType_t bUsefulVariable = 0;
     while ( 1 ) {
         char buffer[3];
-        snprintf ( buffer, sizeof(buffer), "%d", bUsefulVariable );
-        vDisplayPutString ( buffer, sizeof(buffer) )
-        
-        bUsefulVariable++;
+        snprintf ( buffer, sizeof(buffer), "%d", bUsefulVariable++ );
+        vDisplayPutString ( buffer, sizeof(buffer) );
         __delay_ms(1000);
-    }    
+    }
     
 }
 
@@ -43,7 +42,7 @@ void vIncrement ( void ) {
  * Číslo hledejte pokaždé znovu.
  */
 
-void sieveOfEratosthenes(bool isPrime[], int limit) {
+void vSieveOfEratosthenes(bool isPrime[], int limit) {
     for (int i = 2; i * i <= limit; ++i) {
         if (isPrime[i]) {
             for (int j = i * i; j <= limit; j += i)
@@ -52,14 +51,14 @@ void sieveOfEratosthenes(bool isPrime[], int limit) {
     }
 }
 
-int findLargestPrime() {
-    bool isPrime[LIMIT];
+int iFindLargestPrime() {
+    bool isPrime[PRIME_LIMIT];
     // Initialize the array to true, assuming all numbers are prime initially
-    for (int i = 0; i < LIMIT; ++i)
+    for (int i = 0; i < PRIME_LIMIT; ++i)
         isPrime[i] = true;
-    sieveOfEratosthenes(isPrime, LIMIT);
+    vSieveOfEratosthenes(isPrime, PRIME_LIMIT);
     // Find the largest prime number below the given limit
-    for (int i = LIMIT; i >= 2; --i) {
+    for (int i = PRIME_LIMIT; i >= 2; --i) {
         if (isPrime[i])
             return i;
     }
@@ -67,12 +66,12 @@ int findLargestPrime() {
     return -1;
 }
 
-#define LIMIT 1000
+
 /* Find largest prime under 1000 */
-void vTaskFindPrime() {
+void vTaskFindPrime( void ) {
     while ( 1 ) {
-        char buffer[4];
-        int prime = findLargestPrime();
+        char buffer[5];
+        int prime = iFindLargestPrime();
         snprintf ( buffer, sizeof(buffer), "%d", prime );
         vDisplayPutString ( buffer, sizeof(buffer) );
         vTaskDelay( 1000 / portTICK_PERIOD_MS );

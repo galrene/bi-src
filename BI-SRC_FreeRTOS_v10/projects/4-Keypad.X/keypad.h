@@ -7,7 +7,8 @@ extern TaskHandle_t xMTaskHandle;
 
 void vKeypadInit ( void );
 void vKeypadCalibration ( void * );
-void vKeypadMonitorTask ( void * );
+void vKeypadMonitorTask ( void * pvParameters );
+void vChangePriorityTask ( void * pvParameters );
 
 #endif	/* KEYPAD_H */
 
