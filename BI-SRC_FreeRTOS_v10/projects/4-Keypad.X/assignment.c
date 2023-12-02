@@ -72,7 +72,7 @@ void vIncrement ( void ) {
     while ( 1 ) {
         char buffer[3]; buffer[2] = 0;
         snprintf ( buffer, sizeof(buffer), "%d", g_bUsefulVariable++ );
-        vDisplayPutString ( buffer, sizeof(buffer)-1 );
+        // vDisplayPutString ( buffer, sizeof(buffer)-1 );
         __delay_ms(1000);
     }
     

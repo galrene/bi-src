@@ -21,7 +21,7 @@ typedef struct {
 #define KEY_RIGHT  2
 #define KEY_CENTER 5
 
-#define TASK_PRIORITY_CEILING (configMAX_PRIORITIES-3)
+#define TASK_PRIORITY_CEILING (configMAX_PRIORITIES-2)
 
 TaskHandle_t xUDTaskHandle;
 TaskHandle_t xLRTaskHandle;
@@ -80,9 +80,7 @@ void vChangeUDTaskPriority ( void * pvParameters )
 
     while( 1 )
     {
-        vDisplayPutString( "UDWAITING", 9 );
         xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        vDisplayPutString( "UDALIVE", 7 );
         UBaseType_t priority = uxTaskPriorityGet( incTaskHandle );;
         switch (key)
         {
@@ -151,10 +149,8 @@ void vKeypadMonitorTask ( void * pvParameters )
             str[0] = '0' + key;
             vDisplayPutString( "K:", 2 );
             vDisplayPutString( str, 1 );
-            if ( key == KEY_UP || key == KEY_DOWN ) {
-                vDisplayPutString( "NotifyingUD", 11 );
+            if ( key == KEY_UP || key == KEY_DOWN )
                 xTaskNotify ( incrementTaskControl, key, eSetValueWithOverwrite );
-            }
             else if ( key == KEY_LEFT || key == KEY_RIGHT )
                 xTaskNotify ( sieveTaskControl, key, eSetValueWithOverwrite );
             else if ( key == KEY_CENTER )
@@ -166,7 +162,7 @@ void vKeypadMonitorTask ( void * pvParameters )
                              NULL );
         }
         
-        vTaskDelay( 100 / portTICK_PERIOD_MS );
+        vTaskDelay( 200 / portTICK_PERIOD_MS );
     }
     
     vTaskDelete( NULL );

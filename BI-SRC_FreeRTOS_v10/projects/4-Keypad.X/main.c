@@ -49,18 +49,46 @@ int main( void )
     TaskHandle_t UDTask        = NULL;
 
     /* Create the task. */
-    xTaskCreate( ( TaskFunction_t ) vDisplayGatekeeperTask,
+    if ( xTaskCreate( ( TaskFunction_t ) vDisplayGatekeeperTask,
                  ( const char * ) "Disp",
                  configMINIMAL_STACK_SIZE,
                  NULL,
                  (configMAX_PRIORITIES-1),
-                 NULL );
-    xTaskCreate( ( TaskFunction_t ) vIncrement,     
+                 NULL )
+         != pdPASS )
+        vDisplayPutString ( "task creation error", 19 );
+    if ( xTaskCreate( ( TaskFunction_t ) vKeypadMonitorTask,     
+                 ( const char * ) "Keypad", 
+                 3*configMINIMAL_STACK_SIZE, 
+                 NULL,
+                 (configMAX_PRIORITIES-1),
+                 NULL )
+         != pdPASS )
+        vDisplayPutString ( "task creation error", 19 );
+    // if ( xTaskCreate( ( TaskFunction_t ) vChangeLRTaskPriority,     
+    //              ( const char * ) "EraC", 
+    //              configMINIMAL_STACK_SIZE, 
+    //              (void *) &TaskCtrlHandles,
+    //              (configMAX_PRIORITIES-1),
+    //              (TaskHandle_t * ) &TaskCtrlHandles.xSieveTaskHandle )
+    //      != pdPASS )
+    //     vDisplayPutString ( "task creation error", 19 );
+    if ( xTaskCreate( ( TaskFunction_t ) vChangeUDTaskPriority,     
+                 ( const char * ) "++C", 
+                 3*configMINIMAL_STACK_SIZE, 
+                 NULL,
+                 (configMAX_PRIORITIES-1),
+                 &xUDTaskHandle )
+         != pdPASS )
+        vDisplayPutString ( "task creation error", 19 );
+    if ( xTaskCreate( ( TaskFunction_t ) vIncrement,     
                  ( const char * ) "++", 
                  configMINIMAL_STACK_SIZE, 
                  NULL,
                  (configMAX_PRIORITIES-2),
-                 &incrementTask );
+                 &incrementTask )
+         != pdPASS )
+        vDisplayPutString ( "task creation error", 19 );
     // if ( xTaskCreate( ( TaskFunction_t ) vTaskFindPrime,     
     //              ( const char * ) "Erat", 
     //              500, 
@@ -69,27 +97,6 @@ int main( void )
     //              &sieveTask )
     //     != pdPASS )
     //     vDisplayPutString ( "task creation error", 19 );
-
-    if ( xTaskCreate( ( TaskFunction_t ) vChangeUDTaskPriority,     
-                 ( const char * ) "++C", 
-                 3*configMINIMAL_STACK_SIZE, 
-                 (void *) &incrementTask,
-                 (configMAX_PRIORITIES-2),
-                 &xUDTaskHandle )
-         != pdPASS )
-        vDisplayPutString ( "task creation error", 19 );
-    // xTaskCreate( ( TaskFunction_t ) vChangeLRTaskPriority,     
-    //              ( const char * ) "EraC", 
-    //              configMINIMAL_STACK_SIZE, 
-    //              (void *) &TaskCtrlHandles,
-    //              (configMAX_PRIORITIES-1),
-    //              (TaskHandle_t * ) &TaskCtrlHandles.xSieveTaskHandle );
-    xTaskCreate( ( TaskFunction_t ) vKeypadMonitorTask,     
-                 ( const char * ) "Keypad", 
-                 3*configMINIMAL_STACK_SIZE, 
-                 (void *) &UDTask,
-                 (configMAX_PRIORITIES-1),
-                 NULL );
     /* Start the scheduler. */
     vTaskStartScheduler();
 
