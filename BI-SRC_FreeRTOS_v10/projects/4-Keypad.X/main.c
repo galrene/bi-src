@@ -25,10 +25,15 @@ static void prvSetupHardware ( void );
 /*-----------------------------------------------------------*/
 
 typedef struct {
-    TaskHandle_t xIncrementTaskHandle;
-    TaskHandle_t xSieveTaskHandle;
+    TaskHandle_t m_UDHandle;
+    TaskHandle_t m_LRHandle;
 } TTaskHandles_t;
 
+
+/**
+ * Skus si predavat task handles cez globalne premenne alebo ja uz neviem dopice.
+ * 
+ */
 
 /* Create the tasks and start the scheduler. */
 int main( void )
@@ -36,10 +41,12 @@ int main( void )
     /* Configure hardware. */
     prvSetupHardware();
     
-    TTaskHandles_t xTaskHandles = { .xIncrementTaskHandle = NULL,
-                                    .xSieveTaskHandle     = NULL };
+    TTaskHandles_t TaskCtrlHandles = { .m_UDHandle = NULL,
+                                       .m_LRHandle     = NULL };
+    TaskHandle_t incrementTask = NULL;
+    TaskHandle_t sieveTask     = NULL;
 
-    TaskHandle_t changePriorTaskHandle;
+    TaskHandle_t UDTask        = NULL;
 
     /* Create the task. */
     xTaskCreate( vDisplayGatekeeperTask,
@@ -53,24 +60,32 @@ int main( void )
                  configMINIMAL_STACK_SIZE, 
                  NULL,
                  (configMAX_PRIORITIES-2),
-                 (TaskHandle_t * ) &xTaskHandles.xIncrementTaskHandle );
-    xTaskCreate( vSieveOfEratosthenes,     
-                 ( const char * ) "Erat", 
+                 &incrementTask );
+    // if ( xTaskCreate( vTaskFindPrime,     
+    //              ( const char * ) "Erat", 
+    //              500, 
+    //              NULL,
+    //              (configMAX_PRIORITIES-2),
+    //              &sieveTask )
+    //     != pdPASS )
+    //     vDisplayPutString ( "task creation error", 19 );
+
+    xTaskCreate( vChangeUDTaskPriority,     
+                 ( const char * ) "IPrior", 
                  configMINIMAL_STACK_SIZE, 
-                 NULL,
-                 (configMAX_PRIORITIES-2),
-                 (TaskHandle_t * ) &xTaskHandles.xSieveTaskHandle );
-    // send task handles as parameters to keypad monitor task
-    xTaskCreate( vChangePriorityTask,     
-                 ( const char * ) "Prior", 
-                 configMINIMAL_STACK_SIZE, 
-                 (void *) &xTaskHandles,
+                 (void *) &incrementTask,
                  (configMAX_PRIORITIES-1),
-                 &changePriorTaskHandle );
+                 &UDTask );
+    // xTaskCreate( vChangeLRTaskPriority,     
+    //              ( const char * ) "SPrior", 
+    //              configMINIMAL_STACK_SIZE, 
+    //              (void *) &TaskCtrlHandles,
+    //              (configMAX_PRIORITIES-1),
+    //              (TaskHandle_t * ) &TaskCtrlHandles.xSieveTaskHandle );
     xTaskCreate( vKeypadMonitorTask,     
                  ( const char * ) "Keypad", 
-                 configMINIMAL_STACK_SIZE, 
-                 (void *) &changePriorTaskHandle,
+                 3*configMINIMAL_STACK_SIZE, 
+                 (void *) &UDTask,
                  (configMAX_PRIORITIES-1),
                  NULL );
     /* Start the scheduler. */
@@ -97,10 +112,6 @@ static void prvSetupHardware ( void )
  * @brief Zadanie: Zaleziac na stlacenom tlacitku vyvolaj udalost
  * ktora zavola task, ktory zmeni prioritu inemu
  * tasku.
- * 
- * 1.) taskNotifyGive - nic moc
- * 2.) xTaskNotify - dovoluje poslat hodnotu
- *     - xTaskNotifyTake na prijmanie
  */
 /**
  * Uloha s vytvaranim a zabijanim tasku nebude fungovat, kvoli heap_1
