@@ -35,8 +35,10 @@ void vSieveOfEratosthenes(uint8_t isPrime[], int limit) {
     }
 }
 
-int iFindLargestPrime() {
+int iFindLargestPrime ( void ) {
+    vDisplayPutString ( "I", 1 );
     uint8_t isPrime[PRIME_LIMIT];
+    vDisplayPutString ( "E", 1 );
     // Initialize the array to true, assuming all numbers are prime initially
     for (int i = 0; i < PRIME_LIMIT; ++i)
         isPrime[i] = 1;
@@ -53,11 +55,12 @@ int iFindLargestPrime() {
 
 void vTaskFindPrime( void ) {
     while ( 1 ) {
-        vDisplayPutString ( "Sieve", 5 );
+        vDisplayPutString ( "S", 1 );
         char buffer[5] = {0};
-        BaseType_t prime = iFindLargestPrime();
-        snprintf ( buffer, sizeof(buffer), "%x", prime );
-        vDisplayPutString ( buffer, sizeof(buffer) );
+        // int prime = iFindLargestPrime();
+        int prime = 7;
+        snprintf ( buffer, sizeof(buffer), "%d", prime );
+        vDisplayPutString ( buffer, sizeof(buffer)-1 );
         vTaskDelay( 1000 / portTICK_PERIOD_MS );
     }
 }
@@ -70,9 +73,10 @@ void vTaskFindPrime( void ) {
 BaseType_t g_bUsefulVariable = 0;
 void vIncrement ( void ) {
     while ( 1 ) {
-        char buffer[3]; buffer[2] = 0;
-        snprintf ( buffer, sizeof(buffer), "%d", g_bUsefulVariable++ );
-        // vDisplayPutString ( buffer, sizeof(buffer)-1 );
+        char buffer[3]; buffer[2] = '\0';
+        snprintf ( buffer, sizeof(buffer), "%d", g_bUsefulVariable );
+        g_bUsefulVariable++;
+        vDisplayPutString ( buffer, sizeof(buffer)-1 );
         __delay_ms(1000);
     }
     

@@ -9,12 +9,6 @@
 #include "displej.h"
 #include "led.h"
 
-
-typedef struct {
-    TaskHandle_t xIncrementTaskHandle;
-    TaskHandle_t xSieveTaskHandle;
-} TTaskHandles_t;
-
 #define KEY_UP     1
 #define KEY_DOWN   3
 #define KEY_LEFT   4
@@ -22,10 +16,12 @@ typedef struct {
 #define KEY_CENTER 5
 
 #define TASK_PRIORITY_CEILING (configMAX_PRIORITIES-2)
+#define TASK_PRIORITY_FLOOR   (tskIDLE_PRIORITY+1)
 
 TaskHandle_t xUDTaskHandle;
 TaskHandle_t xLRTaskHandle;
-TaskHandle_t xMTaskHandle;
+TaskHandle_t xEratHandle;
+TaskHandle_t xIncrHandle;
 
 void vKeypadInit ( void )
 {
@@ -38,24 +34,31 @@ void vKeypadInit ( void )
 void vChangeLRTaskPriority ( void * pvParameters )
 {
     uint32_t key = 0;
-    TaskHandle_t sieveTaskHandle = xTaskGetHandle( "Erat" );;
+    // TaskHandle_t sieveTaskHandle = xTaskGetHandle( "Erat" );
+    TaskHandle_t sieveTaskHandle = xEratHandle;
+    if ( sieveTaskHandle == NULL)
+        vDisplayPutString( "NULL_LR", 7 );
     char str[2];
     str[1] = '\0';
 
     while( 1 )
     {
         xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        UBaseType_t priority = uxTaskPriorityGet( sieveTaskHandle );;
+        UBaseType_t priority = uxTaskPriorityGet( sieveTaskHandle );
+        str[0] = '0' + priority;
+        vDisplayPutString( "P(", 2 );
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( "->", 2 );
         switch (key)
         {
         case KEY_RIGHT:
             priority >= TASK_PRIORITY_CEILING ?
-            vTaskPrioritySet( sieveTaskHandle, priority = 0 )
+            vTaskPrioritySet( sieveTaskHandle, priority = TASK_PRIORITY_FLOOR )
             :
             vTaskPrioritySet( sieveTaskHandle, priority += 1 );
             break;
         case KEY_LEFT:
-            priority == 0 ?
+            priority == TASK_PRIORITY_FLOOR ?
             vTaskPrioritySet( sieveTaskHandle, priority = TASK_PRIORITY_CEILING )
             :
             vTaskPrioritySet( sieveTaskHandle, priority -= 1 );
@@ -64,8 +67,8 @@ void vChangeLRTaskPriority ( void * pvParameters )
             break;
         }
         str[0] = '0' + priority;
-        vDisplayPutString( "P:", 3 );
-        vDisplayPutString( str, 2 );
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( ")", 1 );
     }
 }
 /**
@@ -74,24 +77,31 @@ void vChangeLRTaskPriority ( void * pvParameters )
 void vChangeUDTaskPriority ( void * pvParameters )
 {
     uint32_t key = 0;
-    TaskHandle_t incTaskHandle = xTaskGetHandle( "++" );
+    // TaskHandle_t incTaskHandle = xTaskGetHandle( "++" );
+    TaskHandle_t incTaskHandle = xIncrHandle;
+    if ( incTaskHandle == NULL)
+        vDisplayPutString( "NULL_UD", 7 );
     char str[2];
     str[1] = '\0';
 
     while( 1 )
     {
         xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        UBaseType_t priority = uxTaskPriorityGet( incTaskHandle );;
+        UBaseType_t priority = uxTaskPriorityGet( incTaskHandle );
+        str[0] = '0' + priority;
+        vDisplayPutString( "P(", 2 );
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( "->", 2 );
         switch (key)
         {
         case KEY_UP:
             priority >= TASK_PRIORITY_CEILING ?
-            vTaskPrioritySet( incTaskHandle, priority = 0 )
+            vTaskPrioritySet( incTaskHandle, priority = TASK_PRIORITY_FLOOR )
             :
             vTaskPrioritySet( incTaskHandle, priority += 1 );
             break;
         case KEY_DOWN:
-            priority == 0 ?
+            priority == TASK_PRIORITY_FLOOR ?
             vTaskPrioritySet( incTaskHandle, priority = TASK_PRIORITY_CEILING )
             :
             vTaskPrioritySet( incTaskHandle, priority -= 1 );
@@ -100,17 +110,15 @@ void vChangeUDTaskPriority ( void * pvParameters )
             break;
         }
         str[0] = '0' + priority;
-        vDisplayPutString( "P:", 2 );
         vDisplayPutString( str, 1 );
+        vDisplayPutString( ")", 1 );
     }
 }
 
 void vLEDBlinkTask ( void )
 {
-    vDisplayPutString( "LED", 3 );
     led_toggle( LED_R );
     vTaskDelay( 500 / portTICK_PERIOD_MS );
-    vDisplayPutString( "   ", 3 );
     led_toggle( LED_R );
     vTaskDelete( NULL );
 }
@@ -127,16 +135,11 @@ void vLEDBlinkTask ( void )
 void vKeypadMonitorTask ( void * pvParameters )
 {
     uint32_t key;
-    char str[2];
-    
-    str[1] = '\0';
-    // TTaskHandles_t * taskHandles = ( TTaskHandles_t * ) pvParameters;
-    // TaskHandle_t incrementTaskControl = taskHandles->xIncrementTaskHandle;
-    // TaskHandle_t sieveTaskControl = taskHandles->xSieveTaskHandle;
+    // char str[2];
+    // str[1] = '\0';
  
-    // TaskHandle_t incrementTaskControl = xTaskGetHandle( "++C" );
     TaskHandle_t incrementTaskControl = xUDTaskHandle;
-    TaskHandle_t sieveTaskControl = xTaskGetHandle( "EraC" );
+    TaskHandle_t sieveTaskControl = xLRTaskHandle;
     if ( sieveTaskControl == NULL)
         vDisplayPutString( "NULL_sieve", 11 );
     if ( incrementTaskControl == NULL)
@@ -146,9 +149,9 @@ void vKeypadMonitorTask ( void * pvParameters )
     {
         key  = get_touchpad_key();
         if( key > 0 && key < 6 ){
-            str[0] = '0' + key;
-            vDisplayPutString( "K:", 2 );
-            vDisplayPutString( str, 1 );
+            // str[0] = '0' + key;
+            // vDisplayPutString( "K:", 2 );
+            // vDisplayPutString( str, 1 );
             if ( key == KEY_UP || key == KEY_DOWN )
                 xTaskNotify ( incrementTaskControl, key, eSetValueWithOverwrite );
             else if ( key == KEY_LEFT || key == KEY_RIGHT )
@@ -162,7 +165,7 @@ void vKeypadMonitorTask ( void * pvParameters )
                              NULL );
         }
         
-        vTaskDelay( 200 / portTICK_PERIOD_MS );
+        vTaskDelay( 150 / portTICK_PERIOD_MS );
     }
     
     vTaskDelete( NULL );

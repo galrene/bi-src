@@ -49,7 +49,7 @@
 #define configMAX_PRIORITIES			( 4 )
 #define configMINIMAL_STACK_SIZE		( 115 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) 5120 )
-#define configMAX_TASK_NAME_LEN			( 4 )
+#define configMAX_TASK_NAME_LEN			( 5 )
 #define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			1
 #define configIDLE_SHOULD_YIELD			1

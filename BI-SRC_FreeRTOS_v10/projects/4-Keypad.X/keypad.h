@@ -4,6 +4,8 @@
 extern TaskHandle_t xUDTaskHandle;
 extern TaskHandle_t xLRTaskHandle;
 extern TaskHandle_t xMTaskHandle;
+extern TaskHandle_t xEratHandle;
+extern TaskHandle_t xIncrHandle;
 
 void vKeypadInit ( void );
 void vKeypadCalibration ( void * );
