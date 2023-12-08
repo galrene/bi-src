@@ -34,8 +34,8 @@
         <itemPath>../../Source/queue.c</itemPath>
         <itemPath>../../Source/tasks.c</itemPath>
         <itemPath>../../Source/list.c</itemPath>
-        <itemPath>../../Source/portable/MemMang/heap_1.c</itemPath>
         <itemPath>../../Source/stream_buffer.c</itemPath>
+        <itemPath>/home/galrene/school/src/BI-SRC_FreeRTOS_v10/Source/portable/MemMang/heap_4.c</itemPath>
       </logicalFolder>
       <itemPath>main.c</itemPath>
       <itemPath>assignment.c</itemPath>
