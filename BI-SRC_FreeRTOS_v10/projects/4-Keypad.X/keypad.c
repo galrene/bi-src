@@ -20,6 +20,7 @@
 
 TaskHandle_t xUDTaskHandle;
 TaskHandle_t xLRTaskHandle;
+TaskHandle_t xMTaskHandle;
 TaskHandle_t xEratHandle;
 TaskHandle_t xIncrHandle;
 
@@ -116,7 +117,7 @@ void vLEDBlinkTask ( void )
     led_toggle( LED_R );
     vTaskDelay( 500 / portTICK_PERIOD_MS );
     led_toggle( LED_R );
-    vTaskDelete( NULL );
+    vTaskDelete ( NULL );
 }
 
 /**
@@ -152,13 +153,16 @@ void vKeypadMonitorTask ( void * pvParameters )
                 xTaskNotify ( incrementTaskControl, key, eSetValueWithOverwrite );
             else if ( key == KEY_LEFT || key == KEY_RIGHT )
                 xTaskNotify ( sieveTaskControl, key, eSetValueWithOverwrite );
-            else if ( key == KEY_CENTER )
+            else if ( key == KEY_CENTER ) {
                 xTaskCreate( ( TaskFunction_t ) vLEDBlinkTask,     
                              ( const char * ) "LED", 
                              configMINIMAL_STACK_SIZE, 
                              NULL,
                              TASK_PRIORITY_CEILING,
-                             NULL );
+                             &xMTaskHandle );
+            }
+                
+                
         }
         
         vTaskDelay( 150 / portTICK_PERIOD_MS );

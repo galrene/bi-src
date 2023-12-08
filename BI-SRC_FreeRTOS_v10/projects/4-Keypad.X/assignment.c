@@ -11,7 +11,6 @@
 
 #define    FCY    16000000UL
 #include <libpic30.h>
-#define PRIME_LIMIT 1000
 
 /**
  * Veškeré tasky jakožto i pomocné funkce si deklarujte v assignment.h a 
@@ -27,10 +26,12 @@ BaseType_t g_bUsefulVariable = 0;
 void vIncrement ( void ) {
     while ( 1 ) {
         char buffer[3]; buffer[2] = '\0';
-        snprintf ( buffer, sizeof(buffer), "%d", g_bUsefulVariable );
+        BaseType_t printedCnt = snprintf ( buffer, sizeof(buffer), "%d", g_bUsefulVariable );
         g_bUsefulVariable++;
-        vDisplayPutString ( buffer, sizeof(buffer)-1 );
-        __delay_ms(1000);
+        vDisplayPutString ( "(" , 1 );
+        vDisplayPutString ( buffer, printedCnt );
+        vDisplayPutString ( ")", 1 );
+        vTaskDelay ( 1000 / portTICK_PERIOD_MS );
     }
     
 }
@@ -86,8 +87,10 @@ void vTaskFindPrime( void ) {
     while ( 1 ) {
         char buffer[5] = {0};
         BaseType_t prime = bFindLargestPrime();
-        snprintf ( buffer, sizeof(buffer), "%d", prime );
-        vDisplayPutString ( buffer, sizeof(buffer)-1 );
+        BaseType_t printedCnt = snprintf ( buffer, sizeof(buffer), "%d", prime );
+        vDisplayPutString ( "[", 1 );
+        vDisplayPutString ( buffer, printedCnt );
+        vDisplayPutString ( "]", 1 );
         vTaskDelay( 1000 / portTICK_PERIOD_MS );
     }
 }

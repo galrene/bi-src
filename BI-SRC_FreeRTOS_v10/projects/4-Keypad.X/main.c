@@ -62,7 +62,7 @@ int main( void )
                  &xEratHandle );
     xTaskCreate( ( TaskFunction_t ) vIncrement,     
                  ( const char * ) "++", 
-                 configMINIMAL_STACK_SIZE, 
+                 2*configMINIMAL_STACK_SIZE, 
                  NULL,
                  (configMAX_PRIORITIES-3),
                  &xIncrHandle );
@@ -87,19 +87,16 @@ static void prvSetupHardware ( void )
 /*-----------------------------------------------------------*/
 
 /**
- * @brief Zadanie: Zaleziac na stlacenom tlacitku vyvolaj udalost
- * ktora zavola task, ktory zmeni prioritu inemu
- * tasku.
- */
-/**
- * Uloha s vytvaranim a zabijanim tasku nebude fungovat, kvoli heap_1
- * https://www.freertos.org/a00111.html
- * treba inu haldu.
-*/
-/**
- * @todo Problemy:
- * Nedorobene uvolnovanie haldy
- * Skarede stvorceky pri vDisplayPutString('\0')
- * Akonahle ma hladat prvocislo, tak sa zasekne
+ * Problems:
+ * 
+ * Questions:
+ * Preco ked pouzijem v incremente vtaskdelay namiesto blokoujuceho
+ * delayu tak potrebuje viacej stacku?
+ * 
+ * Notes:
+ * Problem dochadzajucej haldy vyrieseny nepouzivanim busy waitingu,
+ * cize sa stiha volat idle task ktory uvolnuje TCB po vTaskDelete(NULL)
+ * 
+ * https://forums.freertos.org/t/free-heap-memory-after-deleting-task/14627
  * 
 */
