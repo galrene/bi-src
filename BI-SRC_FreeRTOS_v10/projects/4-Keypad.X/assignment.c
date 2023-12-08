@@ -31,7 +31,7 @@ TaskHandle_t xIncrHandle;
 BaseType_t g_bUsefulVariable = 0;
 void vIncrement ( void ) {
     while ( 1 ) {
-        char buffer[3]; buffer[2] = '\0';
+        char buffer[6] = {0};
         BaseType_t printedCnt = snprintf ( buffer, sizeof(buffer), "%d", g_bUsefulVariable );
         g_bUsefulVariable++;
         vDisplayPutString ( "(" , 1 );
