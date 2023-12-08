@@ -22,7 +22,7 @@ static void prvSetupHardware ( void );
 void vApplicationStackOverflowHook( TaskHandle_t xTask,
                                     char *pcTaskName );
 
-void vWaterMarkTask ( TaskHandle_t task1Handle, TaskHandle_t task2Handle );
+void vWaterMarkTask ( void );
 
 /*-----------------------------------------------------------*/
 /**
@@ -39,6 +39,8 @@ void vWaterMarkTask ( TaskHandle_t task1Handle, TaskHandle_t task2Handle );
  * aku velkost nastavim + blika vypis?
  */
 
+TaskHandle_t task1Handle;
+TaskHandle_t task2Handle;
 
 /* Create the tasks and start the scheduler. */
 int main ( void ) {
@@ -46,15 +48,13 @@ int main ( void ) {
     prvSetupHardware();
     
     /* Static Task stacks */
-    #define T1_STACK_SIZE 57
-    #define T2_STACK_SIZE 76
+    #define T1_STACK_SIZE 57*2-52
+    #define T2_STACK_SIZE 76*2-47
     StackType_t xStack1 [ T1_STACK_SIZE ];
     StackType_t xStack2 [ T2_STACK_SIZE ];
     
     StaticTask_t xTaskBuffer1;
     StaticTask_t xTaskBuffer2;
-    TaskHandle_t task1Handle = NULL;
-    TaskHandle_t task2Handle = NULL;
     
     /* Create the task. */
     task1Handle = xTaskCreateStatic (
@@ -78,8 +78,8 @@ int main ( void ) {
     
     xTaskCreate( vWaterMarkTask,
                 ( const char * ) "DEBUG",
-                2*configMINIMAL_STACK_SIZE,
-                (void *) ( task1Handle, task2Handle ),
+                3*configMINIMAL_STACK_SIZE,
+                NULL,
                 tskIDLE_PRIORITY + 2,
                 NULL );
 
@@ -132,17 +132,22 @@ void vApplicationStackOverflowHook ( TaskHandle_t xTask,
 static void prvSetupHardware ( void ) {
     vInitLED ();
     vDisplayInit();
+    vLEDAllOff();
 }
 
-void vWaterMarkTask ( TaskHandle_t task1Handle, TaskHandle_t task2Handle ) {
+void vWaterMarkTask ( void ) {
     while ( 1 ) {
         UBaseType_t waterMark1 = uxTaskGetStackHighWaterMark ( task1Handle );
         UBaseType_t waterMark2 = uxTaskGetStackHighWaterMark ( task2Handle );
         
-        char buffer [16];
-        size_t strLen = snprintf ( buffer, sizeof(buffer), "T1:%d T2:%d", waterMark1, waterMark2 );
+        char buffer [32]= {0};
+        size_t strLen = snprintf ( buffer, sizeof(buffer), "free[T1:%dW T2:%dW]", waterMark1, waterMark2 );
         vDisplayPutString ( buffer, strLen );
-        vTaskDelay ( pdMS_TO_TICKS ( 1000 ) );
+        // fill line with whitespace
+        if ( strLen < 21 )
+            for ( size_t i = strLen; i < 21; i++ )
+                vDisplayPutString ( " ", 1 );
+        vTaskDelay ( 1000 / portTICK_PERIOD_MS );
     }
 }
 

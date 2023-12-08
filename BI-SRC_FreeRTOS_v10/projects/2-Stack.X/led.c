@@ -11,6 +11,11 @@ void vInitLED ( void ) {
     ODCG |= 0x03C0;
 }
 
+void vLEDAllOff ( void ) {
+    LATF |= 0x0030; // turn off red
+    LATG |= 0x03C0; // turn off green and blue
+}
+
 void vLightLED ( short led_id, short on ) {
     switch ( led_id ) {
         case LED_R:

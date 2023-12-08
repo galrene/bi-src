@@ -10,6 +10,7 @@ void vBlinkLED ( short led );
 void vSemaphore ( void );
 void vLightLED ( short led_id, short on );
 void vInitLED ( void );
+void vLEDAllOff ( void );
 
 #endif	/* LED_H */
 
