@@ -19,39 +19,6 @@
  */
 
 /**
- * Vytvořte task, který bude pomocí Eratosthenova síta hledat největší
- * prvočíslo menší než 1000 a přesně jednou za sekundu jej bude vypisovat
- * na displej (výpis nějak odlište od výpisu předchozího tasku).
- * Číslo hledejte pokaždé znovu.
- */
-
-void vSieveOfEratosthenes(BaseType_t isPrime[], BaseType_t limit) {
-    for (BaseType_t i = 2; i * i <= limit; ++i) {
-        if (isPrime[i]) {
-            for (BaseType_t j = i * i; j <= limit; j += i)
-                isPrime[j] = 0;
-        }
-    }
-}
-
-BaseType_t bFindLargestPrime ( void ) {
-    vDisplayPutString ( "I", 1 );
-    BaseType_t isPrime[PRIME_LIMIT];
-    vDisplayPutString ( "E", 1 );
-    // Initialize the array to true, assuming all numbers are prime initially
-    for (BaseType_t i = 0; i < PRIME_LIMIT; ++i)
-        isPrime[i] = 1;
-    vSieveOfEratosthenes(isPrime, PRIME_LIMIT);
-    // Find the largest prime number below the given limit
-    for (BaseType_t i = PRIME_LIMIT; i >= 2; --i) {
-        if (isPrime[i])
-            return i;
-    }
-    // No prime is found
-    return -1;
-}
-
-/**
  * Vytvořte task, který bude mít proměnnou typu BaseType_t,
  * jednou za vteřinu ji inkrementuje a vypíše její hodnotu na displej.
  * Použijte busy waiting.
@@ -99,7 +66,7 @@ void findPrimes() {
     }
 }
 
-BaseType_t bFindLargestPrime2 ( void ) {
+BaseType_t bFindLargestPrime ( void ) {
     initSieve(); // Initialize the sieve array
     findPrimes(); // Find prime numbers
     // Find largest number in the sieve array
@@ -109,11 +76,16 @@ BaseType_t bFindLargestPrime2 ( void ) {
     }
     return -1;
 }
-
+/**
+ * Vytvořte task, který bude pomocí Eratosthenova síta hledat největší
+ * prvočíslo menší než 1000 a přesně jednou za sekundu jej bude vypisovat
+ * na displej (výpis nějak odlište od výpisu předchozího tasku).
+ * Číslo hledejte pokaždé znovu.
+ */
 void vTaskFindPrime( void ) {
     while ( 1 ) {
         char buffer[5] = {0};
-        BaseType_t prime = bFindLargestPrime2();
+        BaseType_t prime = bFindLargestPrime();
         snprintf ( buffer, sizeof(buffer), "%d", prime );
         vDisplayPutString ( buffer, sizeof(buffer)-1 );
         vTaskDelay( 1000 / portTICK_PERIOD_MS );

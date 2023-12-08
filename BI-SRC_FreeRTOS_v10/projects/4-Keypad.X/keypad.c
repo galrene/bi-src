@@ -33,7 +33,7 @@ void vKeypadInit ( void )
  */
 void vChangeLRTaskPriority ( void * pvParameters )
 {
-    uint32_t key = 0;
+    BaseType_t key = 0;
     if ( xEratHandle == NULL)
         vDisplayPutString( "NULL_LR", 7 );
     char str[2];
@@ -74,7 +74,7 @@ void vChangeLRTaskPriority ( void * pvParameters )
  */
 void vChangeUDTaskPriority ( void * pvParameters )
 {
-    uint32_t key = 0;
+    BaseType_t key = 0;
     if ( xIncrHandle == NULL)
         vDisplayPutString( "NULL_UD", 7 );
     char str[2];
@@ -130,7 +130,7 @@ void vLEDBlinkTask ( void )
  **/
 void vKeypadMonitorTask ( void * pvParameters )
 {
-    uint32_t key;
+    BaseType_t key;
     // char str[2];
     // str[1] = '\0';
  
