@@ -12,10 +12,16 @@
 #define    FCY    16000000UL
 #include <libpic30.h>
 
+#include "assignment_defines.h"
 /**
  * Veškeré tasky jakožto i pomocné funkce si deklarujte v assignment.h a 
  * definujte v assignment.c.
  */
+TaskHandle_t xUDTaskHandle;
+TaskHandle_t xLRTaskHandle;
+TaskHandle_t xMTaskHandle;
+TaskHandle_t xEratHandle;
+TaskHandle_t xIncrHandle;
 
 /**
  * Vytvořte task, který bude mít proměnnou typu BaseType_t,
@@ -94,3 +100,95 @@ void vTaskFindPrime( void ) {
         vTaskDelay( 1000 / portTICK_PERIOD_MS );
     }
 }
+
+/**
+ * @brief "Sieve" task priority
+ */
+void vChangeLRTaskPriority ( void * pvParameters )
+{
+    BaseType_t key = 0;
+    if ( xEratHandle == NULL)
+        vDisplayPutString( "NULL_LR", 7 );
+    char str[2];
+    str[1] = '\0';
+
+    while( 1 )
+    {
+        xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
+        UBaseType_t priority = uxTaskPriorityGet( xEratHandle );
+        str[0] = '0' + priority;
+        vDisplayPutString( "P(", 2 );
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( "->", 2 );
+        switch (key)
+        {
+        case KEY_RIGHT:
+            priority >= TASK_PRIORITY_CEILING ?
+            vTaskPrioritySet( xEratHandle, priority = TASK_PRIORITY_FLOOR )
+            :
+            vTaskPrioritySet( xEratHandle, priority += 1 );
+            break;
+        case KEY_LEFT:
+            priority <= TASK_PRIORITY_FLOOR ?
+            vTaskPrioritySet( xEratHandle, priority = TASK_PRIORITY_CEILING )
+            :
+            vTaskPrioritySet( xEratHandle, priority -= 1 );
+            break;
+        default:
+            break;
+        }
+        str[0] = '0' + priority;
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( ")", 1 );
+    }
+}
+/**
+ * @brief "Increment" task priority
+ */
+void vChangeUDTaskPriority ( void * pvParameters )
+{
+    BaseType_t key = 0;
+    if ( xIncrHandle == NULL)
+        vDisplayPutString( "NULL_UD", 7 );
+    char str[2];
+    str[1] = '\0';
+
+    while( 1 )
+    {
+        xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
+        UBaseType_t priority = uxTaskPriorityGet( xIncrHandle );
+        str[0] = '0' + priority;
+        vDisplayPutString( "P(", 2 );
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( "->", 2 );
+        switch (key)
+        {
+        case KEY_UP:
+            priority >= TASK_PRIORITY_CEILING ?
+            vTaskPrioritySet( xIncrHandle, priority = TASK_PRIORITY_FLOOR )
+            :
+            vTaskPrioritySet( xIncrHandle, priority += 1 );
+            break;
+        case KEY_DOWN:
+            priority <= TASK_PRIORITY_FLOOR ?
+            vTaskPrioritySet( xIncrHandle, priority = TASK_PRIORITY_CEILING )
+            :
+            vTaskPrioritySet( xIncrHandle, priority -= 1 );
+            break;
+        default:
+            break;
+        }
+        str[0] = '0' + priority;
+        vDisplayPutString( str, 1 );
+        vDisplayPutString( ")", 1 );
+    }
+}
+
+void vLEDBlinkTask ( void )
+{
+    led_toggle( LED_R );
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
+    led_toggle( LED_R );
+    vTaskDelete ( NULL );
+}
+

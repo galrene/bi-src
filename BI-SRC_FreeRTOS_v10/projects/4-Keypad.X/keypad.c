@@ -9,115 +9,12 @@
 #include "displej.h"
 #include "led.h"
 
-#define KEY_UP     1
-#define KEY_DOWN   3
-#define KEY_LEFT   4
-#define KEY_RIGHT  2
-#define KEY_CENTER 5
-
-#define TASK_PRIORITY_CEILING (configMAX_PRIORITIES-2)
-#define TASK_PRIORITY_FLOOR   (tskIDLE_PRIORITY+1)
-
-TaskHandle_t xUDTaskHandle;
-TaskHandle_t xLRTaskHandle;
-TaskHandle_t xMTaskHandle;
-TaskHandle_t xEratHandle;
-TaskHandle_t xIncrHandle;
+#include "assignment.h"
+#include "assignment_defines.h"
 
 void vKeypadInit ( void )
 {
     touchpad_init();
-}
-
-/**
- * @brief "Sieve" task priority
- */
-void vChangeLRTaskPriority ( void * pvParameters )
-{
-    BaseType_t key = 0;
-    if ( xEratHandle == NULL)
-        vDisplayPutString( "NULL_LR", 7 );
-    char str[2];
-    str[1] = '\0';
-
-    while( 1 )
-    {
-        xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        UBaseType_t priority = uxTaskPriorityGet( xEratHandle );
-        str[0] = '0' + priority;
-        vDisplayPutString( "P(", 2 );
-        vDisplayPutString( str, 1 );
-        vDisplayPutString( "->", 2 );
-        switch (key)
-        {
-        case KEY_RIGHT:
-            priority >= TASK_PRIORITY_CEILING ?
-            vTaskPrioritySet( xEratHandle, priority = TASK_PRIORITY_FLOOR )
-            :
-            vTaskPrioritySet( xEratHandle, priority += 1 );
-            break;
-        case KEY_LEFT:
-            priority <= TASK_PRIORITY_FLOOR ?
-            vTaskPrioritySet( xEratHandle, priority = TASK_PRIORITY_CEILING )
-            :
-            vTaskPrioritySet( xEratHandle, priority -= 1 );
-            break;
-        default:
-            break;
-        }
-        str[0] = '0' + priority;
-        vDisplayPutString( str, 1 );
-        vDisplayPutString( ")", 1 );
-    }
-}
-/**
- * @brief "Increment" task priority
- */
-void vChangeUDTaskPriority ( void * pvParameters )
-{
-    BaseType_t key = 0;
-    if ( xIncrHandle == NULL)
-        vDisplayPutString( "NULL_UD", 7 );
-    char str[2];
-    str[1] = '\0';
-
-    while( 1 )
-    {
-        xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        UBaseType_t priority = uxTaskPriorityGet( xIncrHandle );
-        str[0] = '0' + priority;
-        vDisplayPutString( "P(", 2 );
-        vDisplayPutString( str, 1 );
-        vDisplayPutString( "->", 2 );
-        switch (key)
-        {
-        case KEY_UP:
-            priority >= TASK_PRIORITY_CEILING ?
-            vTaskPrioritySet( xIncrHandle, priority = TASK_PRIORITY_FLOOR )
-            :
-            vTaskPrioritySet( xIncrHandle, priority += 1 );
-            break;
-        case KEY_DOWN:
-            priority <= TASK_PRIORITY_FLOOR ?
-            vTaskPrioritySet( xIncrHandle, priority = TASK_PRIORITY_CEILING )
-            :
-            vTaskPrioritySet( xIncrHandle, priority -= 1 );
-            break;
-        default:
-            break;
-        }
-        str[0] = '0' + priority;
-        vDisplayPutString( str, 1 );
-        vDisplayPutString( ")", 1 );
-    }
-}
-
-void vLEDBlinkTask ( void )
-{
-    led_toggle( LED_R );
-    vTaskDelay( 500 / portTICK_PERIOD_MS );
-    led_toggle( LED_R );
-    vTaskDelete ( NULL );
 }
 
 /**
