@@ -34,9 +34,7 @@ void vKeypadInit ( void )
 void vChangeLRTaskPriority ( void * pvParameters )
 {
     uint32_t key = 0;
-    // TaskHandle_t sieveTaskHandle = xTaskGetHandle( "Erat" );
-    TaskHandle_t sieveTaskHandle = xEratHandle;
-    if ( sieveTaskHandle == NULL)
+    if ( xEratHandle == NULL)
         vDisplayPutString( "NULL_LR", 7 );
     char str[2];
     str[1] = '\0';
@@ -44,7 +42,7 @@ void vChangeLRTaskPriority ( void * pvParameters )
     while( 1 )
     {
         xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        UBaseType_t priority = uxTaskPriorityGet( sieveTaskHandle );
+        UBaseType_t priority = uxTaskPriorityGet( xEratHandle );
         str[0] = '0' + priority;
         vDisplayPutString( "P(", 2 );
         vDisplayPutString( str, 1 );
@@ -53,15 +51,15 @@ void vChangeLRTaskPriority ( void * pvParameters )
         {
         case KEY_RIGHT:
             priority >= TASK_PRIORITY_CEILING ?
-            vTaskPrioritySet( sieveTaskHandle, priority = TASK_PRIORITY_FLOOR )
+            vTaskPrioritySet( xEratHandle, priority = TASK_PRIORITY_FLOOR )
             :
-            vTaskPrioritySet( sieveTaskHandle, priority += 1 );
+            vTaskPrioritySet( xEratHandle, priority += 1 );
             break;
         case KEY_LEFT:
-            priority == TASK_PRIORITY_FLOOR ?
-            vTaskPrioritySet( sieveTaskHandle, priority = TASK_PRIORITY_CEILING )
+            priority <= TASK_PRIORITY_FLOOR ?
+            vTaskPrioritySet( xEratHandle, priority = TASK_PRIORITY_CEILING )
             :
-            vTaskPrioritySet( sieveTaskHandle, priority -= 1 );
+            vTaskPrioritySet( xEratHandle, priority -= 1 );
             break;
         default:
             break;
@@ -77,9 +75,7 @@ void vChangeLRTaskPriority ( void * pvParameters )
 void vChangeUDTaskPriority ( void * pvParameters )
 {
     uint32_t key = 0;
-    // TaskHandle_t incTaskHandle = xTaskGetHandle( "++" );
-    TaskHandle_t incTaskHandle = xIncrHandle;
-    if ( incTaskHandle == NULL)
+    if ( xIncrHandle == NULL)
         vDisplayPutString( "NULL_UD", 7 );
     char str[2];
     str[1] = '\0';
@@ -87,7 +83,7 @@ void vChangeUDTaskPriority ( void * pvParameters )
     while( 1 )
     {
         xTaskNotifyWait( 0, 0, &key, portMAX_DELAY );
-        UBaseType_t priority = uxTaskPriorityGet( incTaskHandle );
+        UBaseType_t priority = uxTaskPriorityGet( xIncrHandle );
         str[0] = '0' + priority;
         vDisplayPutString( "P(", 2 );
         vDisplayPutString( str, 1 );
@@ -96,15 +92,15 @@ void vChangeUDTaskPriority ( void * pvParameters )
         {
         case KEY_UP:
             priority >= TASK_PRIORITY_CEILING ?
-            vTaskPrioritySet( incTaskHandle, priority = TASK_PRIORITY_FLOOR )
+            vTaskPrioritySet( xIncrHandle, priority = TASK_PRIORITY_FLOOR )
             :
-            vTaskPrioritySet( incTaskHandle, priority += 1 );
+            vTaskPrioritySet( xIncrHandle, priority += 1 );
             break;
         case KEY_DOWN:
-            priority == TASK_PRIORITY_FLOOR ?
-            vTaskPrioritySet( incTaskHandle, priority = TASK_PRIORITY_CEILING )
+            priority <= TASK_PRIORITY_FLOOR ?
+            vTaskPrioritySet( xIncrHandle, priority = TASK_PRIORITY_CEILING )
             :
-            vTaskPrioritySet( incTaskHandle, priority -= 1 );
+            vTaskPrioritySet( xIncrHandle, priority -= 1 );
             break;
         default:
             break;

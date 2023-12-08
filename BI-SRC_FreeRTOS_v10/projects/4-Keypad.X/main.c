@@ -23,19 +23,13 @@
 static void prvSetupHardware ( void );
 
 /*-----------------------------------------------------------*/
-
-/**
- * Skus si predavat task handles cez globalne premenne alebo ja uz neviem dopice.
- * 
- */
-
 /* Create the tasks and start the scheduler. */
 int main( void )
 {
     /* Configure hardware. */
     prvSetupHardware();
 
-    /* Create the task. */
+    /* Create the tasks. */
     if ( xTaskCreate( ( TaskFunction_t ) vDisplayGatekeeperTask,
                  ( const char * ) "Disp",
                  configMINIMAL_STACK_SIZE,
@@ -43,7 +37,7 @@ int main( void )
                  (configMAX_PRIORITIES-1),
                  NULL )
          != pdPASS )
-        vDisplayPutString ( "task creation error", 19 );
+        return 1;
     if ( xTaskCreate( ( TaskFunction_t ) vKeypadMonitorTask,     
                  ( const char * ) "Keypad", 
                  configMINIMAL_STACK_SIZE, 
@@ -68,6 +62,14 @@ int main( void )
                  &xUDTaskHandle )
          != pdPASS )
         vDisplayPutString ( "task creation error", 19 );
+    if ( xTaskCreate( ( TaskFunction_t ) vTaskFindPrime,     
+                 ( const char * ) "Erat", 
+                 5*configMINIMAL_STACK_SIZE, 
+                 NULL,
+                 (configMAX_PRIORITIES-3),
+                 &xEratHandle )
+        != pdPASS )
+        vDisplayPutString ( "task creation error", 19 );
     if ( xTaskCreate( ( TaskFunction_t ) vIncrement,     
                  ( const char * ) "++", 
                  configMINIMAL_STACK_SIZE, 
@@ -76,14 +78,6 @@ int main( void )
                  &xIncrHandle )
          != pdPASS )
         vDisplayPutString ( "task creation error", 19 );
-    // if ( xTaskCreate( ( TaskFunction_t ) vTaskFindPrime,     
-    //              ( const char * ) "Erat", 
-    //              2*configMINIMAL_STACK_SIZE, 
-    //              NULL,
-    //              (configMAX_PRIORITIES-1),
-    //              &xEratHandle )
-    //     != pdPASS )
-    //     vDisplayPutString ( "task creation error", 19 );
     /* Start the scheduler. */
     vTaskStartScheduler();
 
@@ -113,4 +107,11 @@ static void prvSetupHardware ( void )
  * Uloha s vytvaranim a zabijanim tasku nebude fungovat, kvoli heap_1
  * https://www.freertos.org/a00111.html
  * treba inu haldu.
+*/
+/**
+ * @todo Problemy:
+ * Nedorobene uvolnovanie haldy
+ * Skarede stvorceky pri vDisplayPutString('\0')
+ * Akonahle ma hladat prvocislo, tak sa zasekne
+ * 
 */

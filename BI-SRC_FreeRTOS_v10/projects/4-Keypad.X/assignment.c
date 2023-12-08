@@ -26,25 +26,25 @@
  * Číslo hledejte pokaždé znovu.
  */
 
-void vSieveOfEratosthenes(uint8_t isPrime[], int limit) {
-    for (int i = 2; i * i <= limit; ++i) {
+void vSieveOfEratosthenes(uint8_t isPrime[], BaseType_t limit) {
+    for (BaseType_t i = 2; i * i <= limit; ++i) {
         if (isPrime[i]) {
-            for (int j = i * i; j <= limit; j += i)
+            for (BaseType_t j = i * i; j <= limit; j += i)
                 isPrime[j] = 0;
         }
     }
 }
 
-int iFindLargestPrime ( void ) {
+BaseType_t iFindLargestPrime ( void ) {
     vDisplayPutString ( "I", 1 );
     uint8_t isPrime[PRIME_LIMIT];
     vDisplayPutString ( "E", 1 );
     // Initialize the array to true, assuming all numbers are prime initially
-    for (int i = 0; i < PRIME_LIMIT; ++i)
+    for (BaseType_t i = 0; i < PRIME_LIMIT; ++i)
         isPrime[i] = 1;
     vSieveOfEratosthenes(isPrime, PRIME_LIMIT);
     // Find the largest prime number below the given limit
-    for (int i = PRIME_LIMIT; i >= 2; --i) {
+    for (BaseType_t i = PRIME_LIMIT; i >= 2; --i) {
         if (isPrime[i])
             return i;
     }
@@ -57,8 +57,8 @@ void vTaskFindPrime( void ) {
     while ( 1 ) {
         vDisplayPutString ( "S", 1 );
         char buffer[5] = {0};
-        // int prime = iFindLargestPrime();
-        int prime = 7;
+        // BaseType_t prime = iFindLargestPrime();
+        BaseType_t prime = 7;
         snprintf ( buffer, sizeof(buffer), "%d", prime );
         vDisplayPutString ( buffer, sizeof(buffer)-1 );
         vTaskDelay( 1000 / portTICK_PERIOD_MS );
