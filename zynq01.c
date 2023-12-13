@@ -13,7 +13,8 @@
 * all copies or substantial portions of the Software.
 *
 * Use of the Software is limited solely to applications:
-* (a) running on a Xilinx device, orh a bus or interconnect.
+* (a) running on a Xilinx device, or
+* (b) that interact with a Xilinx device through a bus or interconnect.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -48,6 +49,10 @@
 #include "platform.h"
 #include "xil_printf.h"
 #include "xgpio.h"
+
+/* Used for interrupt */
+#include "xil_exception.h"
+#include "xscugic.h"
 
 /* Instances of the GPIO Driver */
 XGpio gpio;
@@ -113,40 +118,43 @@ void display( int num ) {
 	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, digit_masks[num]);
 }
 
-void disp_nums ( int num0, int num1, int num2, int num3 ) {
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D3 | digit_masks[num0]);
+void disp_nums ( int pos0, int pos1, int pos2, int pos3 ) {
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D3 | digit_masks[pos0]);
 	usleep(5000);
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D2 | digit_masks[num1]);
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D2 | digit_masks[pos1]);
 	usleep(5000);
-* (b) that interact with a Xilinx device throug
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D1 | digit_masks[num2]);
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D1 | digit_masks[pos2]);
 	usleep(5000);
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D0 | digit_masks[num3]);
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D0 | digit_masks[pos3]);
 	usleep(5000);
+}
+
+int init_interrupt ( void ) {
+	XScuGic_Config * intCfg = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
+	if ( ! intCfg )
+		return 0;
+
+	return 1;
 }
 
 /**
  *  TODO:
- *  Na 7-segmentovém displeji zobrazte čtyři libovolné hexa číslice (vytvořte pole se všemi konfiguracemi 0 až F)
- *
- *  V cyklu posouvejte jedničku v osmibitové proměnné a tu posílejte na LED diody, využijte funkce usleep()
-
- *	// pri testovani prerusenia preprogramovavat fpga (tlacitkom so stvorcekmi) pred testovanim noveho kodu - registre mozu byt v nespravnom stave
+  *	// pri testovani prerusenia preprogramovavat fpga (tlacitkom so stvorcekmi) pred testovanim noveho kodu - registre mozu byt v nespravnom stave
  *	// ID preruseni je vektor preruseni - vyhledate BTNS
  *  Pomocí přerušení od tlačítek, vypište do terminálu, které tlačítko bylo stisknuto
  *
  *  Při přepnutí libovolného přepínače vypište v terminálu hexa hodnotu stavu přepínačů
  */
 
-/**
- * NOTES:
- * spravit citac ktory ked dosiahne hodnotu tak sa precyklia ledky, jediny delay bude mat 7-seg
- * inak by nevychadzali timingy pre 7-seg
- */
 int main()
 {
    init_platform();
    init_peripherals();
+   if ( ! init_interrupt() ) {
+	   xil_printf("Unable to initalise interrupt\r\n");
+	   cleanup_platform();
+   }
+
    all_led_off();
    unsigned char led_mask = 1;
    for ( int led_timer = 0; ; led_timer++ )
