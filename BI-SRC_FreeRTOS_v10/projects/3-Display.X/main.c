@@ -20,6 +20,14 @@
 static void prvSetupHardware ( void );
 
 /*-----------------------------------------------------------*/
+void vPrintIdleVarTask( void *pvParameters );
+BaseType_t veryUsefulVariable;
+
+void vApplicationIdleHook( void ) {
+    veryUsefulVariable++;
+}
+
+/*-----------------------------------------------------------*/
 
 /* Create the tasks and start the scheduler. */
 int main( void )
@@ -28,6 +36,13 @@ int main( void )
     prvSetupHardware();
     
     /* Create the task. */
+    xTaskCreate( vDisplayGatekeeperTask,
+                ( const char * ) "Manage Q",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                tskIDLE_PRIORITY + 3,
+                NULL );
+
     xTaskCreate( vDisplayPrintTask2,
                  ( const char * ) "Greet 1",
                  2*configMINIMAL_STACK_SIZE,
@@ -40,14 +55,13 @@ int main( void )
                  (void *) "B",
                  tskIDLE_PRIORITY + 2,
                  NULL );
-    
-    xTaskCreate( vDisplayGatekeeperTask,
-                 ( const char * ) "Manage Q",
-                 configMINIMAL_STACK_SIZE,
+    xTaskCreate( vPrintIdleVarTask,
+                 ( const char * ) "PIdle",
+                 2*configMINIMAL_STACK_SIZE,
                  NULL,
                  tskIDLE_PRIORITY + 3,
                  NULL );
-    
+
     /* Start the scheduler. */
     vTaskStartScheduler();
 
@@ -64,3 +78,15 @@ static void prvSetupHardware ( void )
 }
 
 /*-----------------------------------------------------------*/
+
+void vPrintIdleVarTask( void *pvParameters )
+{
+    
+    for( ;; )
+    {
+        char buffer[6] = {0};
+        snprintf( buffer, sizeof(buffer), "%d", veryUsefulVariable );
+        vDisplayPutString( buffer );
+        vTaskDelay( 10000 / portTICK_PERIOD_MS );
+    }
+}

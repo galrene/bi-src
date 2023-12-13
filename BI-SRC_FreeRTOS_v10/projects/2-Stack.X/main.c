@@ -27,16 +27,17 @@ void vWaterMarkTask ( void );
 /*-----------------------------------------------------------*/
 /**
  * Task1
- *  analyticky <=40B; nahodily pristup 57 words
+ *   analyticky <=40B
+ *   nahodily pristup 62W
+ *   Experimentalny: 62W   
  * Task2
- *  analyticky 76B, nahodily pristup 76 words
- * 
- * experimentalny pristup vypisoval pre oboje 76
+ *  analyticky 76B
+ *  nahodily pristup 105W
+ *  expereminatalny: 105W
  * 
  * BONUS:
- * Nahodily pristup rovnake vysledky
- * experimentalny vypisuje zvlastne hodnoty, ktore sa menia podal toho
- * aku velkost nastavim + blika vypis?
+ * Experimentalny: T1: 62, T2: 105
+ * Nahodily pristup: rovnako ako exp
  */
 
 TaskHandle_t task1Handle;
@@ -48,8 +49,8 @@ int main ( void ) {
     prvSetupHardware();
     
     /* Static Task stacks */
-    #define T1_STACK_SIZE 57*2-52
-    #define T2_STACK_SIZE 76*2-47
+    #define T1_STACK_SIZE 62
+    #define T2_STACK_SIZE 105
     StackType_t xStack1 [ T1_STACK_SIZE ];
     StackType_t xStack2 [ T2_STACK_SIZE ];
     
@@ -65,6 +66,12 @@ int main ( void ) {
             tskIDLE_PRIORITY + 1,
             xStack1,
             &xTaskBuffer1 ); 
+    // xTaskCreate ( vStackTask1,
+    //               ( const char * ) "ST 1",
+    //               T1_STACK_SIZE,
+    //               NULL,
+    //               tskIDLE_PRIORITY + 1,        
+    //               &task1Handle );
     task2Handle = xTaskCreateStatic (
             vStackTask2,
             ( const char * ) "ST 2",
@@ -73,8 +80,20 @@ int main ( void ) {
             tskIDLE_PRIORITY + 1,
             xStack2,
             &xTaskBuffer2 );
+    // xTaskCreate ( vStackTask2,
+    //               ( const char * ) "ST 2",
+    //               T2_STACK_SIZE,
+    //               NULL,
+    //               tskIDLE_PRIORITY + 1,
+    //               &task2Handle );
 
-    xTaskCreate ( vDisplayGatekeeperTask, ( const char * ) "DGKT", 1000, NULL, tskIDLE_PRIORITY + 2, NULL );
+
+    xTaskCreate ( vDisplayGatekeeperTask,
+                  ( const char * ) "DGKT",
+                  2*configMINIMAL_STACK_SIZE,
+                  NULL,
+                  tskIDLE_PRIORITY + 2,
+                  NULL );
     
     xTaskCreate( vWaterMarkTask,
                 ( const char * ) "DEBUG",

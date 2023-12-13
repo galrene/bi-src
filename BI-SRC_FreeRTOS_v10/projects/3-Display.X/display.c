@@ -40,7 +40,7 @@ void vDisplayPrintTask2 ( void * pvParameters )
 {
     while ( 1 ) {
         vDisplayPutString ( pvParameters );
-        vTaskDelay ( 500 );
+        vTaskDelay ( 500 / portTICK_PERIOD_MS );
     }
 }
 /**
