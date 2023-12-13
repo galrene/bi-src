@@ -130,16 +130,28 @@ void disp_nums ( int pos0, int pos1, int pos2, int pos3 ) {
 }
 
 int init_interrupt ( void ) {
-	XScuGic_Config * intCfg = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
-	if ( ! intCfg )
+    // not sure if this shouldn't come after LookupConfig
+    XGpio_InterruptGlobalEnable(&gpio); // TODO: change to interrupt on select channels only
+    XScuGic_Config * cfg = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
+	if ( cfg == NULL )
 		return 0;
-
+    XScuGic instance;
+    if ( XScuGic_CfgInitialize(&instance, cfg, cfg->CpuBaseAddress)
+         != XST_SUCCESS )
+        return 0;
+    Xil_ExceptionInit();
+    Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT, Xil_ExceptionHandler Handler, (void *) &instance);
+    Xil_ExceptionEnable();
+    // Int_I- id přerušení které chceme povolit (naleznete v xparameters.h)
+    XScuGic_Connect(&instance, u32 Int_Id, Xil_InterruptHandler Handler, NULL)
+    void XScuGic_Enable(XScuGic* InstancePtr, u32 Int_Id);
 	return 1;
 }
 
 /**
  *  TODO:
-  *	// pri testovani prerusenia preprogramovavat fpga (tlacitkom so stvorcekmi) pred testovanim noveho kodu - registre mozu byt v nespravnom stave
+  *	// pri testovani prerusenia preprogramovavat fpga (tlacitkom so stvorcekmi) pred testovanim noveho kodu 
+       - registre mozu byt v nespravnom stave
  *	// ID preruseni je vektor preruseni - vyhledate BTNS
  *  Pomocí přerušení od tlačítek, vypište do terminálu, které tlačítko bylo stisknuto
  *
