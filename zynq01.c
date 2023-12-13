@@ -13,8 +13,7 @@
 * all copies or substantial portions of the Software.
 *
 * Use of the Software is limited solely to applications:
-* (a) running on a Xilinx device, or
-* (b) that interact with a Xilinx device through a bus or interconnect.
+* (a) running on a Xilinx device, orh a bus or interconnect.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -55,31 +54,7 @@ XGpio gpio;
 
 #define LED_CHANNEL 2
 #define LED_MASK    0x01
-#define LED_DELAY   10000000
 #define DISP_CHANNEL 1
-
-void init_peripherals() {
-	XGpio_Initialize(&gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
-	XGpio_SetDataDirection(&gpio, LED_CHANNEL, ~LED_MASK );
-	XGpio_SetDataDirection(&gpio, DISP_CHANNEL, ~LED_MASK );
-}
-
-
-void all_led_off() {
-	XGpio_DiscreteClear(&gpio, LED_CHANNEL, LED_MASK);
-	print("LEDs turned off\n\r");
-
-}
-
-#define REP_CNT 1000
-
-void cycle_leds (unsigned char * led_mask ) {
-	XGpio_DiscreteWrite(&gpio, LED_CHANNEL, *led_mask);
-	(*led_mask) <<= 1;
-	if ( *led_mask == 0x00 ) // if shifted out of bounds, start from the beginning again
-		*led_mask = 1;
-	usleep(500000);
-}
 
 #define SA 1 << 0
 #define SB 1 << 1
@@ -114,10 +89,40 @@ unsigned int digit_masks[] = {
     SA | SE | SF | SG                 // F
 };
 
+void init_peripherals() {
+	XGpio_Initialize(&gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
+	XGpio_SetDataDirection(&gpio, LED_CHANNEL,  0x00 );
+	XGpio_SetDataDirection(&gpio, DISP_CHANNEL, ~LED_MASK );
+}
 
+
+void all_led_off() {
+	XGpio_DiscreteClear(&gpio, LED_CHANNEL, 0xFF);
+	print("LEDs turned off\n\r");
+
+}
+
+void cycle_leds (unsigned char * led_mask ) {
+	XGpio_DiscreteWrite(&gpio, LED_CHANNEL, *led_mask);
+	(*led_mask) <<= 1;
+	if ( *led_mask == 0x00 ) // if shifted out of bounds, start from the beginning again
+		*led_mask = 1;
+}
 
 void display( int num ) {
 	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, digit_masks[num]);
+}
+
+void disp_nums ( int num0, int num1, int num2, int num3 ) {
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D3 | digit_masks[num0]);
+	usleep(5000);
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D2 | digit_masks[num1]);
+	usleep(5000);
+* (b) that interact with a Xilinx device throug
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D1 | digit_masks[num2]);
+	usleep(5000);
+	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D0 | digit_masks[num3]);
+	usleep(5000);
 }
 
 /**
@@ -143,13 +148,13 @@ int main()
    init_platform();
    init_peripherals();
    all_led_off();
-
-   for ( int i = 0 ; i < 1000; i++ )
+   unsigned char led_mask = 1;
+   for ( int led_timer = 0; ; led_timer++ )
    {
-	   display(i%16);
-   	   usleep(1000000);
+	   disp_nums(0xD, 0xE, 0xA, 0xD);
+	   if ( led_timer % 10 == 0 )
+		   cycle_leds(&led_mask);
    }
-	   //	   cycle_leds(&led_mask);
 
 
    cleanup_platform();
