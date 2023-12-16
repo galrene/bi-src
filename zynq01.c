@@ -57,10 +57,10 @@
 /* Instances of the GPIO Driver */
 XGpio sw_gpio;
 XGpio but_gpio;
-XGpio gpio;
+XGpio led_gpio;
+XGpio disp_gpio;
 
 #define LED_CHANNEL     2
-#define LED_MASK        0x01
 #define DISP_CHANNEL    1
 #define BUT_CHANNEL     1
 #define SWITCH_CHANNEL  1
@@ -99,11 +99,16 @@ unsigned int digit_masks[] = {
 };
 
 void init_peripherals() {
-	XGpio_Initialize(&gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
-	XGpio_SetDataDirection(&gpio, LED_CHANNEL,  0x00 );
-	XGpio_SetDataDirection(&gpio, DISP_CHANNEL, 0x00 );
+	// init leds
+    XGpio_Initialize(&led_gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
+	XGpio_SetDataDirection(&led_gpio, LED_CHANNEL,  0x00 );
+    // init display
+    // XGpio_Initialize(&disp_gpio, <TODO>); TODO: id v xparams.h a zmenit
+	XGpio_SetDataDirection(&disp_gpio, DISP_CHANNEL, 0x00 );
+    // init buttons
 	XGpio_Initialize(&but_gpio, XPAR_AXI_GPIO_BTNS_8BITS_DEVICE_ID);
 	XGpio_SetDataDirection(&but_gpio, 0x01, 0xFF );
+    // init switches
 	XGpio_Initialize(&sw_gpio, XPAR_AXI_GPIO_SWS_12BITS_DEVICE_ID);
 	XGpio_SetDataDirection(&sw_gpio, 0x01, 0xFFF );
 }
@@ -116,24 +121,24 @@ void all_led_off() {
 }
 
 void cycle_leds (unsigned char * led_mask ) {
-	XGpio_DiscreteWrite(&gpio, LED_CHANNEL, *led_mask);
+	XGpio_DiscreteWrite(&led_gpio, LED_CHANNEL, *led_mask);
 	(*led_mask) <<= 1;
 	if ( *led_mask == 0x00 ) // if shifted out of bounds, start from the beginning again
 		*led_mask = 1;
 }
 
 void display( int num ) {
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, digit_masks[num]);
+	XGpio_DiscreteWrite(&disp_gpio, DISP_CHANNEL, digit_masks[num]);
 }
 
 void disp_nums ( int pos0, int pos1, int pos2, int pos3 ) {
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D3 | digit_masks[pos0]);
+	XGpio_DiscreteWrite(&disp_gpio, DISP_CHANNEL, D3 | digit_masks[pos0]);
 	usleep(5000);
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D2 | digit_masks[pos1]);
+	XGpio_DiscreteWrite(&disp_gpio, DISP_CHANNEL, D2 | digit_masks[pos1]);
 	usleep(5000);
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D1 | digit_masks[pos2]);
+	XGpio_DiscreteWrite(&disp_gpio, DISP_CHANNEL, D1 | digit_masks[pos2]);
 	usleep(5000);
-	XGpio_DiscreteWrite(&gpio, DISP_CHANNEL, D0 | digit_masks[pos3]);
+	XGpio_DiscreteWrite(&disp_gpio, DISP_CHANNEL, D0 | digit_masks[pos3]);
 	usleep(5000);
 }
 
@@ -162,15 +167,19 @@ int init_interrupt ( void ) {
     xil_printf("CfgInit success\r\n");
 
     Xil_ExceptionInit();
-    Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT, (Xil_ExceptionHandler) XScuGic_InterruptHandler, (void *) &int_controller);
+    Xil_ExceptionRegisterHandler( XIL_EXCEPTION_ID_INT,
+                                  (Xil_ExceptionHandler) XScuGic_InterruptHandler,
+                                  (void *) &int_controller);
 
     // enable interrupt from buttons
-	XScuGic_Connect(&int_controller, XPAR_FABRIC_AXI_GPIO_BTNS_8BITS_IP2INTC_IRPT_INTR, (Xil_ExceptionHandler) button_handler, NULL);
+	XScuGic_Connect( &int_controller, XPAR_FABRIC_AXI_GPIO_BTNS_8BITS_IP2INTC_IRPT_INTR,
+                     (Xil_ExceptionHandler) button_handler, NULL);
 	XScuGic_Enable(&int_controller, XPAR_FABRIC_AXI_GPIO_BTNS_8BITS_IP2INTC_IRPT_INTR);
 	xil_printf("Enabled button interrupt\r\n");
 
 	// enable interrupt from switches
-	XScuGic_Connect(&int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR, (Xil_ExceptionHandler) switch_handler, NULL);
+	XScuGic_Connect( &int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR,
+                     (Xil_ExceptionHandler) switch_handler, NULL);
 	XScuGic_Enable(&int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR);
 	xil_printf("Enabled switch interrupt\r\n");
 
