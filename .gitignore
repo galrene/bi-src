@@ -36,3 +36,5 @@
 /BI-SRC_FreeRTOS_v10/projects/3-Display.X/dist/
 /BI-SRC_FreeRTOS_v10/projects/4-Keypad.X/build/
 /BI-SRC_FreeRTOS_v10/projects/4-Keypad.X/dist/
+
+.vscode
