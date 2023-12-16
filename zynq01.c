@@ -107,10 +107,10 @@ void init_peripherals() {
 	XGpio_SetDataDirection(&disp_gpio, DISP_CHANNEL, 0x00 );
     // init buttons
 	XGpio_Initialize(&but_gpio, XPAR_AXI_GPIO_BTNS_8BITS_DEVICE_ID);
-	XGpio_SetDataDirection(&but_gpio, 0x01, 0xFF );
+	XGpio_SetDataDirection(&but_gpio, BUT_CHANNEL, 0xFF );
     // init switches
 	XGpio_Initialize(&sw_gpio, XPAR_AXI_GPIO_SWS_12BITS_DEVICE_ID);
-	XGpio_SetDataDirection(&sw_gpio, 0x01, 0xFFF );
+	XGpio_SetDataDirection(&sw_gpio, SWITCH_CHANNEL, 0xFFF );
 }
 
 
@@ -188,8 +188,8 @@ int init_interrupt ( void ) {
 
     XGpio_InterruptGlobalEnable(&sw_gpio); // na sw a butt xgpio instancie
 	XGpio_InterruptGlobalEnable(&but_gpio); // na sw a butt xgpio instancie
-	XGpio_InterruptEnable(&sw_gpio, 0x01); // channel 1 - both buttons and switches
-	XGpio_InterruptEnable(&but_gpio, 0x01); // channel 1 - both buttons and switches
+	XGpio_InterruptEnable(&sw_gpio, SWITCH_CHANNEL); // channel 1 - both buttons and switches
+	XGpio_InterruptEnable(&but_gpio, BUT_CHANNEL); // channel 1 - both buttons and switches
     xil_printf("Interrupt handling READY\r\n");
    	return 1;
 }
