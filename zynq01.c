@@ -55,11 +55,15 @@
 #include "xscugic.h"
 
 /* Instances of the GPIO Driver */
+XGpio sw_gpio;
+XGpio but_gpio;
 XGpio gpio;
 
-#define LED_CHANNEL 2
-#define LED_MASK    0x01
-#define DISP_CHANNEL 1
+#define LED_CHANNEL     2
+#define LED_MASK        0x01
+#define DISP_CHANNEL    1
+#define BUT_CHANNEL     1
+#define SWITCH_CHANNEL  1
 
 #define SA 1 << 0
 #define SB 1 << 1
@@ -97,7 +101,11 @@ unsigned int digit_masks[] = {
 void init_peripherals() {
 	XGpio_Initialize(&gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
 	XGpio_SetDataDirection(&gpio, LED_CHANNEL,  0x00 );
-	XGpio_SetDataDirection(&gpio, DISP_CHANNEL, ~LED_MASK );
+	XGpio_SetDataDirection(&gpio, DISP_CHANNEL, 0x00 );
+	XGpio_Initialize(&but_gpio, XPAR_AXI_GPIO_BTNS_8BITS_DEVICE_ID);
+	XGpio_SetDataDirection(&but_gpio, 0x01, 0xFF );
+	XGpio_Initialize(&sw_gpio, XPAR_AXI_GPIO_SWS_12BITS_DEVICE_ID);
+	XGpio_SetDataDirection(&sw_gpio, 0x01, 0xFFF );
 }
 
 
@@ -129,33 +137,65 @@ void disp_nums ( int pos0, int pos1, int pos2, int pos3 ) {
 	usleep(5000);
 }
 
+void button_handler ( void ) {
+	XGpio_InterruptClear(&but_gpio, BUT_CHANNEL);
+	xil_printf("BUTTON interrupt\r\n");
+	unsigned int readVal = XGpio_DiscreteRead(&but_gpio, BUT_CHANNEL);
+	xil_printf("readVal: %X\r\n", readVal);
+}
+
+void switch_handler ( void ) {
+	XGpio_InterruptClear(&sw_gpio, SWITCH_CHANNEL);
+	xil_printf("SWITCH interrupt\r\n");
+	unsigned int readVal = XGpio_DiscreteRead(&sw_gpio, SWITCH_CHANNEL);
+	xil_printf("readVal: %X\r\n", readVal);
+}
+
 int init_interrupt ( void ) {
-    // not sure if this shouldn't come after LookupConfig
-    XGpio_InterruptGlobalEnable(&gpio); // TODO: change to interrupt on select channels only
-    XScuGic_Config * cfg = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
-	if ( cfg == NULL )
-		return 0;
-    XScuGic instance;
-    if ( XScuGic_CfgInitialize(&instance, cfg, cfg->CpuBaseAddress)
-         != XST_SUCCESS )
-        return 0;
+    XScuGic_Config * cfg = XScuGic_LookupConfig(XPAR_SCUGIC_0_DEVICE_ID);
+	if ( cfg == NULL ) return 0;
+	xil_printf("Lookup success\r\n");
+
+	XScuGic int_controller;
+    if ( XScuGic_CfgInitialize(&int_controller, cfg, cfg->CpuBaseAddress)
+         != XST_SUCCESS ) return 0;
+    xil_printf("CfgInit success\r\n");
+
     Xil_ExceptionInit();
-    Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT, Xil_ExceptionHandler Handler, (void *) &instance);
-    Xil_ExceptionEnable();
-    // Int_I- id přerušení které chceme povolit (naleznete v xparameters.h)
-    XScuGic_Connect(&instance, u32 Int_Id, Xil_InterruptHandler Handler, NULL)
-    void XScuGic_Enable(XScuGic* InstancePtr, u32 Int_Id);
-	return 1;
+    Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT, (Xil_ExceptionHandler) XScuGic_InterruptHandler, (void *) &int_controller);
+
+    // enable interrupt from buttons
+	XScuGic_Connect(&int_controller, XPAR_FABRIC_AXI_GPIO_BTNS_8BITS_IP2INTC_IRPT_INTR, (Xil_ExceptionHandler) button_handler, NULL);
+	XScuGic_Enable(&int_controller, XPAR_FABRIC_AXI_GPIO_BTNS_8BITS_IP2INTC_IRPT_INTR);
+	xil_printf("Enabled button interrupt\r\n");
+
+	// enable interrupt from switches
+	XScuGic_Connect(&int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR, (Xil_ExceptionHandler) switch_handler, NULL);
+	XScuGic_Enable(&int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR);
+	xil_printf("Enabled switch interrupt\r\n");
+
+	Xil_ExceptionEnable();
+	xil_printf("Xil handler registered\r\n");
+
+    XGpio_InterruptGlobalEnable(&sw_gpio); // na sw a butt xgpio instancie
+	XGpio_InterruptGlobalEnable(&but_gpio); // na sw a butt xgpio instancie
+	XGpio_InterruptEnable(&sw_gpio, 0x01); // channel 1 - both buttons and switches
+	XGpio_InterruptEnable(&but_gpio, 0x01); // channel 1 - both buttons and switches
+    xil_printf("Interrupt handling READY\r\n");
+   	return 1;
 }
 
 /**
  *  TODO:
-  *	// pri testovani prerusenia preprogramovavat fpga (tlacitkom so stvorcekmi) pred testovanim noveho kodu 
+  *	// pri testovani prerusenia preprogramovavat fpga (tlacitkom so stvorcekmi) pred testovanim noveho kodu
        - registre mozu byt v nespravnom stave
  *	// ID preruseni je vektor preruseni - vyhledate BTNS
  *  Pomocí přerušení od tlačítek, vypište do terminálu, které tlačítko bylo stisknuto
  *
  *  Při přepnutí libovolného přepínače vypište v terminálu hexa hodnotu stavu přepínačů
+ *
+ *  xgpio instancia pre kazdu periferiu zvlast
+ *
  */
 
 int main()
@@ -163,7 +203,7 @@ int main()
    init_platform();
    init_peripherals();
    if ( ! init_interrupt() ) {
-	   xil_printf("Unable to initalise interrupt\r\n");
+	   xil_printf("Unable to initialise interrupt\r\n");
 	   cleanup_platform();
    }
 
