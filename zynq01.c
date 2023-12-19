@@ -103,7 +103,7 @@ void init_peripherals() {
     XGpio_Initialize(&led_gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
 	XGpio_SetDataDirection(&led_gpio, LED_CHANNEL,  0x00 );
     // init display
-    // XGpio_Initialize(&disp_gpio, <TODO>); TODO: id v xparams.h a zmenit
+    XGpio_Initialize(&disp_gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID); // todo: might be wrong
 	XGpio_SetDataDirection(&disp_gpio, DISP_CHANNEL, 0x00 );
     // init buttons
 	XGpio_Initialize(&but_gpio, XPAR_AXI_GPIO_BTNS_8BITS_DEVICE_ID);
