@@ -115,7 +115,7 @@ void init_peripherals() {
 
 
 void all_led_off() {
-	XGpio_DiscreteClear(&gpio, LED_CHANNEL, 0xFF);
+	XGpio_DiscreteClear(&led_gpio, LED_CHANNEL, 0xFF);
 	print("LEDs turned off\n\r");
 
 }
