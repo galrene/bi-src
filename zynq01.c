@@ -170,6 +170,8 @@ int init_interrupt ( void ) {
     Xil_ExceptionRegisterHandler( XIL_EXCEPTION_ID_INT,
                                   (Xil_ExceptionHandler) XScuGic_InterruptHandler,
                                   (void *) &int_controller);
+	Xil_ExceptionEnable();
+	xil_printf("Xil handler registered\r\n");
 
     // enable interrupt from buttons
 	XScuGic_Connect( &int_controller, XPAR_FABRIC_AXI_GPIO_BTNS_8BITS_IP2INTC_IRPT_INTR,
@@ -183,8 +185,7 @@ int init_interrupt ( void ) {
 	XScuGic_Enable(&int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR);
 	xil_printf("Enabled switch interrupt\r\n");
 
-	Xil_ExceptionEnable();
-	xil_printf("Xil handler registered\r\n");
+	
 
     XGpio_InterruptGlobalEnable(&sw_gpio); // na sw a butt xgpio instancie
 	XGpio_InterruptGlobalEnable(&but_gpio); // na sw a butt xgpio instancie
@@ -205,6 +206,10 @@ int init_interrupt ( void ) {
  *
  *  xgpio instancia pre kazdu periferiu zvlast
  *
+ * 
+ * Interrupt example:
+ * https://github.com/Xilinx/embeddedsw/blob/master/XilinxProcessorIPLib/drivers/scugic/examples/xscugic_example.c
+ * 
  */
 
 int main()
