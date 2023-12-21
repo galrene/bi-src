@@ -98,6 +98,10 @@ unsigned int digit_masks[] = {
     SA | SE | SF | SG                 // F
 };
 
+// displayed numbers
+char nums[4] = { 0xD, 0xE, 0xA, 0xD };
+
+
 void init_peripherals() {
 	// init leds
     XGpio_Initialize(&led_gpio, XPAR_AXI_GPIO_LED_DISP_DEVICE_ID);
@@ -151,23 +155,29 @@ void button_handler ( void ) {
 
 	xil_printf("Tlacitko:\r\n");
 	int but_num = 0;
+	int disp_idx = 0;
 	switch (readVal & 0xF )
 	{
 	case 1:
 		but_num = 0;
+		disp_idx = 3;
 		break;
 	case 2:
 		but_num = 1;
+		disp_idx = 2;
 		break;
 	case 4:
 		but_num = 2;
+		disp_idx = 1;
 		break;
 	case 8:
 		but_num = 3;
+		disp_idx = 0;
 		break;
 	default:
 		break;
 	}
+	nums[disp_idx]= (nums[disp_idx] + 1) % 16; // increment corresponding 7-seg display digit
 	xil_printf("BUT0%d\r\n", but_num );
 }
 
@@ -235,6 +245,7 @@ int init_interrupt ( void ) {
  * 
  */
 
+
 int main()
 {
    init_platform();
@@ -248,7 +259,7 @@ int main()
    unsigned char led_mask = 1;
    for ( int led_timer = 0; ; led_timer++ )
    {
-	   disp_nums(0xD, 0xE, 0xA, 0xD);
+	   disp_nums ( nums[0], nums[1], nums[2], nums[3] );
 	   if ( led_timer % 10 == 0 )
 		   cycle_leds(&led_mask);
    }
