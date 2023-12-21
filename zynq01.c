@@ -144,16 +144,38 @@ void disp_nums ( int pos0, int pos1, int pos2, int pos3 ) {
 
 void button_handler ( void ) {
 	XGpio_InterruptClear(&but_gpio, BUT_CHANNEL);
-	xil_printf("BUTTON interrupt\r\n");
 	unsigned int readVal = XGpio_DiscreteRead(&but_gpio, BUT_CHANNEL);
-	xil_printf("readVal: %X\r\n", readVal);
+	
+	if ( readVal == 0 )
+		return;
+
+	xil_printf("Tlacitko:\r\n");
+	int but_num = 0;
+	switch (readVal & 0xF )
+	{
+	case 1:
+		but_num = 0;
+		break;
+	case 2:
+		but_num = 1;
+		break;
+	case 4:
+		but_num = 2;
+		break;
+	case 8:
+		but_num = 3;
+		break;
+	default:
+		break;
+	}
+	xil_printf("BUT0%d\r\n", but_num );
 }
 
 void switch_handler ( void ) {
 	XGpio_InterruptClear(&sw_gpio, SWITCH_CHANNEL);
-	xil_printf("SWITCH interrupt\r\n");
+	xil_printf("Switche:\r\n");
 	unsigned int readVal = XGpio_DiscreteRead(&sw_gpio, SWITCH_CHANNEL);
-	xil_printf("readVal: %X\r\n", readVal);
+	xil_printf("0x%X\r\n", readVal);
 }
 
 XScuGic int_controller;
