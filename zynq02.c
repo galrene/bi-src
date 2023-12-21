@@ -64,7 +64,9 @@ static void prvRxTask(void *pvParameters);
 /* The queue used by the Tx and Rx tasks, as described at the top of this
 file. */
 static QueueHandle_t xQueue = NULL;
-char HWstring[15] = "Hello World";
+
+#define QUEUE_LENGTH 5
+#define QUEUE_ITEM_SIZE 32
 
 int main ( void )
 {
@@ -81,9 +83,8 @@ int main ( void )
     than the Tx task, so will preempt the Tx task and remove values from the
     queue as soon as the Tx task writes to the queue - therefore the queue can
     never have more than one item in it. */
-    xQueue = xQueueCreate( 5,                 /* There is only one space in the queue. */
-                           sizeof(HWstring)); /* Each space in the queue is large enough to hold a uint32_t. */
-
+    xQueue = xQueueCreate( QUEUE_LENGTH,
+                           QUEUE_ITEM_SIZE);
     /* Check the queue was created. */
     configASSERT(xQueue);
 
@@ -103,6 +104,18 @@ int main ( void )
 void display_task ( void )
 {
     
+    for (;;)
+    {
+        unsigned int rec_item;
+        xQueueReceive ( xQueue,          /* The queue being read. */
+                        rec_item,        /* Data is read into this address. */
+                        portMAX_DELAY ); /* Wait time for data data. */
+        unsigned int recNumLo = rec_item & 0xF;        // low 4 bits
+        unsigned int recNumHi = (rec_item >> 4) & 0xF; // high 4 bits
+
+        disp_nums ( 0x00, 0x00, recNumHi, recNumLo );
+        xil_printf("%02X\n", rec_item );
+    }
 }
 
 /*-----------------------------------------------------------*/
@@ -182,6 +195,12 @@ static int prvSetupHardware(void)
 
     return XST_SUCCESS;
 }
+/**
+ * TODO:
+ * Vymysliet ako rozhodovat ci bolo stlacene tlacitko alebo prepinac
+ * a podla toho kde na displeji zobrazit hodnotu.
+ */
+
 
 /**
    - Vytvořte obsluhu přerušení pro tlačítka a přepínače.
