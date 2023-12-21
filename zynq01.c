@@ -156,13 +156,15 @@ void switch_handler ( void ) {
 	xil_printf("readVal: %X\r\n", readVal);
 }
 
+XScuGic int_controller;
+XScuGic_Config * scugic_cfg;
+
 int init_interrupt ( void ) {
-    XScuGic_Config * cfg = XScuGic_LookupConfig(XPAR_SCUGIC_0_DEVICE_ID);
-	if ( cfg == NULL ) return 0;
+    scugic_cfg = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
+	if ( scugic_cfg == NULL ) return 0;
 	xil_printf("Lookup success\r\n");
 
-	XScuGic int_controller;
-    if ( XScuGic_CfgInitialize(&int_controller, cfg, cfg->CpuBaseAddress)
+    if ( XScuGic_CfgInitialize(&int_controller, scugic_cfg, scugic_cfg->CpuBaseAddress)
          != XST_SUCCESS ) return 0;
     xil_printf("CfgInit success\r\n");
 
@@ -185,7 +187,6 @@ int init_interrupt ( void ) {
 	XScuGic_Enable(&int_controller, XPAR_FABRIC_AXI_GPIO_SWS_12BITS_IP2INTC_IRPT_INTR);
 	xil_printf("Enabled switch interrupt\r\n");
 
-	
 
     XGpio_InterruptGlobalEnable(&sw_gpio); // na sw a butt xgpio instancie
 	XGpio_InterruptGlobalEnable(&but_gpio); // na sw a butt xgpio instancie
